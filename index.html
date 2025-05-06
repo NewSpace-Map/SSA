@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Carte des entreprises européennes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    #map {
+      height: 100%;
+      width: 100%;
+    }
+    #filter-box {
+      position: absolute;
+      top: 200px;
+      left: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      padding: 15px;
+      width: 200px;
+      z-index: 1000;
+    }
+    #filter-box h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 18px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 5px;
+    }
+    .filter-group {
+      margin-bottom: 15px;
+    }
+    .filter-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      padding: 5px 0;
+      user-select: none;
+    }
+    .filter-arrow {
+      transition: transform 0.3s ease;
+      font-size: 16px;
+    }
+    .filter-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+    }
+    .filter-content.open {
+      max-height: 300px;
+      margin-top: 8px;
+    }
+    .filter-scrollable {
+      max-height: 200px;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+    .filter-scrollable label {
+      display: block;
+      margin: 5px 0;
+      font-size: 14px;
+    }
+    .filter-scrollable::-webkit-scrollbar {
+      width: 6px;
+    }
+    .filter-scrollable::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="map"></div>
+
+<!-- Boîte de filtres -->
+<div id="filter-box">
+  <h3>Filtres</h3>
+
+  <div class="filter-group">
+    <div class="filter-header" onclick="toggleFilter('theme-content', 'theme-arrow')">
+      <strong>Topics</strong>
+      <span id="theme-arrow" class="filter-arrow">◀</span>
+    </div>
+    <div id="theme-content" class="filter-content">
+      <div class="filter-scrollable" id="theme-checkboxes">
+        <!-- Cases à cocher Thèmes -->
+      </div>
+    </div>
+  </div>
+
+  <div class="filter-group">
+    <div class="filter-header" onclick="toggleFilter('country-content', 'country-arrow')">
+      <strong>Countries</strong>
+      <span id="country-arrow" class="filter-arrow">◀</span>
+    </div>
+    <div id="country-content" class="filter-content">
+      <div class="filter-scrollable" id="country-checkboxes">
+        <!-- Cases à cocher Pays -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+        // Tableau combiné des entreprises européennes (Flood Management)
+        const companies = [
+            {
+                name: "Vyoma [DE, HQ]",
+                activity: "Vyoma plans to build and operate an innovative, satellite-based observation system for space debris monitoring, and collision warnings. Space Surveillance & Tracking Service.​​",
+                city: "Munich",
+                country: "Germany",
+                lat: 48.1665754,
+                lon: 11.5776184,
+                web: "https://www.vyoma.space/",
+                linkedin: "https://www.linkedin.com/company/vyomaspace/about/",
+		theme: "Integrated Players",
+		employees: "11 - 50",
+		founded: "Founded in 2020",
+		logo: "https://media.licdn.com/dms/image/v2/D4D0BAQENijE9m2_zIA/company-logo_200_200/company-logo_200_200/0/1701455047521/vyomaspace_logo?e=1752105600&v=beta&t=k8hB46XFhKBzsu0ltQpIUU7fsSO25MRZbe5joNK7Du0"
+            },
+{
+                name: "ALDORIA [FR, HQ]",
+                activity: "Aldoria collects, processes and leverages space situational awareness data to protect critical assets in space. By actively monitoring space debris, satellites and derelicts, Aldoria helps operators and space agencies proactively avoid threats and adjust orbital paths.",
+                city: "Paris",
+                country: "France",
+                lat: 48.8654176,
+                lon: 2.3819734,
+                web: "https://www.aldoria.com/",
+                linkedin: "https://www.linkedin.com/company/aldoria/about/",
+		theme: "Integrated Players",
+		employees: "51 - 100",
+		founded: "Founded in 2017",
+		logo: "https://media.licdn.com/dms/image/v2/D4E0BAQEejG_Zivf-sw/company-logo_200_200/company-logo_200_200/0/1709630684393/aldoria_logo?e=1752105600&v=beta&t=q6pbK8NPUUZalxrJIbCj-VKBBVY-QuE94dh-k9lzGUU"
+            },
+
+{
+                name: "ALDORIA [FR]",
+                activity: "Aldoria collects, processes and leverages space situational awareness data to protect critical assets in space. By actively monitoring space debris, satellites and derelicts, Aldoria helps operators and space agencies proactively avoid threats and adjust orbital paths.​​",
+                city: "Toulouse",
+                country: "France",
+                lat: 43.6054267,
+                lon: 1.4441202,
+                web: "https://www.aldoria.com/",
+                linkedin: "https://www.linkedin.com/company/aldoria/about/",
+		theme: "Integrated Players",
+		employees: "51 - 100",
+		founded: "Founded in 2017",
+		logo: "https://media.licdn.com/dms/image/v2/D4E0BAQEejG_Zivf-sw/company-logo_200_200/company-logo_200_200/0/1709630684393/aldoria_logo?e=1752105600&v=beta&t=q6pbK8NPUUZalxrJIbCj-VKBBVY-QuE94dh-k9lzGUU"
+            },
+{
+                name: "ALDORIA [USA, TX]",
+                activity: "Aldoria collects, processes and leverages space situational awareness data to protect critical assets in space. By actively monitoring space debris, satellites and derelicts, Aldoria helps operators and space agencies proactively avoid threats and adjust orbital paths.",
+                city: "Austin",
+                country: "United States",
+                lat: 30.258911,
+                lon: -97.752543,
+                web: "https://www.aldoria.com/",
+                linkedin: "https://www.linkedin.com/company/aldoria/about/",
+		theme: "Integrated Players",
+		employees: "51 - 100",
+		founded: "Founded in 2017",
+		logo: "https://media.licdn.com/dms/image/v2/D4E0BAQEejG_Zivf-sw/company-logo_200_200/company-logo_200_200/0/1709630684393/aldoria_logo?e=1752105600&v=beta&t=q6pbK8NPUUZalxrJIbCj-VKBBVY-QuE94dh-k9lzGUU"
+            },
+{
+                name: "GMV [ES, HQ]",
+                activity: "GMV is leading the Spanish Space Surveillance and Operations Center (S3TOC). GMV is also priming several EU SST-related R&D studies for Spain’s Industrial Technology Development Center (CDTI).",
+                city: "Madrid",
+                country: "Spain",
+                lat: 40.59131,
+                lon: -3.7065756,
+                web: "https://www.gmv.com/en-es/sectors/space#space-surveillance-and-tracking-and-space-traffic-management-608",
+                linkedin: "https://www.linkedin.com/company/gmv/about/",
+		theme: "Pure Data Players",
+		employees: "1 001 - 5 000",
+		founded: "Founded in 1984",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQFnjYaT3-0pCQ/company-logo_200_200/company-logo_200_200/0/1735806566171/gmv_logo?e=1752105600&v=beta&t=LgVltPMF9racLnAONDh07Wj56-Ovbmby-OQP6ZK7KZw"
+            },
+{
+                name: "GMV [FR]",
+                activity: "GMV has been supporting CNES’s space debris activities since 2012. In Toulouse GMV is leading development and operation of CNES’ SST Simulation and Analysis Software (BAS3E), among other projects.",
+                city: "Ramonville-Saint-Agne",
+                country: "France",
+                lat: 43.5509557,
+                lon: 1.4875339,
+                web: "https://www.gmv.com/en-es/sectors/space#space-surveillance-and-tracking-and-space-traffic-management-608",
+                linkedin: "https://www.linkedin.com/company/gmv/about/",
+		theme: "Pure Data Players",
+		employees: "1 001 - 5 000",
+		founded: "Since 2012",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQFnjYaT3-0pCQ/company-logo_200_200/company-logo_200_200/0/1735806566171/gmv_logo?e=1752105600&v=beta&t=LgVltPMF9racLnAONDh07Wj56-Ovbmby-OQP6ZK7KZw"
+            },
+{
+                name: "GMV [DE]",
+                activity: "GMV is leading the maintenance and upgrading of the Mission System for German Space Situational Awareness Centre (GSSAC) and the development of the basic SSA data processing algorithms (underpinning future EU SST’s objects catalog) for German Space Agency (DLR).",
+                city: "Darmstadt",
+                country: "Germany",
+                lat: 49.8725383,
+                lon: 8.6284062,
+                web: "https://www.gmv.com/en-es/sectors/space#space-surveillance-and-tracking-and-space-traffic-management-608",
+                linkedin: "https://www.linkedin.com/company/gmv/about/",
+		theme: "Pure Data Players",
+		employees: "1 001 - 5 000",
+		founded: "Since 2009-2014",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQFnjYaT3-0pCQ/company-logo_200_200/company-logo_200_200/0/1735806566171/gmv_logo?e=1752105600&v=beta&t=LgVltPMF9racLnAONDh07Wj56-Ovbmby-OQP6ZK7KZw"
+            },
+{
+                name: "GMV [RO]",
+                activity: "GMV is leading development, integration and operation of the Romanian space surveillance operations center for the Romanian Space Agency (RoSA) and is also providing the image processing software and the sensor’s planning software for the Romanian telescopes that contribute to the EU SST.",
+                city: "Bucharest",
+                country: "Romania",
+                lat: 44.43225,
+                lon: 26.10626,
+                web: "https://www.gmv.com/en-es/sectors/space#space-surveillance-and-tracking-and-space-traffic-management-608",
+                linkedin: "https://www.linkedin.com/company/gmv/about/",
+		theme: "Pure Data Players",
+		employees: "1 001 - 5 000",
+		founded: "Since 2009-2014",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQFnjYaT3-0pCQ/company-logo_200_200/company-logo_200_200/0/1735806566171/gmv_logo?e=1752105600&v=beta&t=LgVltPMF9racLnAONDh07Wj56-Ovbmby-OQP6ZK7KZw"
+            },
+{
+                name: "GMV [PL]",
+                activity: "GMV has led development and integration of Poland’s space surveillance operations center for the Polish Space Agency (POLSA).",
+                city: "Warsaw",
+                country: "Poland",
+                lat: 52.2302918,
+                lon: 20.9802408,
+                web: "https://www.gmv.com/en-es/sectors/space#space-surveillance-and-tracking-and-space-traffic-management-608",
+                linkedin: "https://www.linkedin.com/company/gmv/about/",
+		theme: "Pure Data Players",
+		employees: "1 001 - 5 000",
+		founded: "Since 2009-2014",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQFnjYaT3-0pCQ/company-logo_200_200/company-logo_200_200/0/1735806566171/gmv_logo?e=1752105600&v=beta&t=LgVltPMF9racLnAONDh07Wj56-Ovbmby-OQP6ZK7KZw"
+            },
+{
+                name: "GMV [PT]",
+                activity: "GMV is conducting several R&D studies for Portugal’s Ministry of Defence in the framework of the EU SST system.",
+                city: "Lisbon",
+                country: "Portugal",
+                lat: 38.7833846,
+                lon: -9.0986545,
+                web: "https://www.gmv.com/en-es/sectors/space#space-surveillance-and-tracking-and-space-traffic-management-608",
+                linkedin: "https://www.linkedin.com/company/gmv/about/",
+		theme: "Pure Data Players",
+		employees: "1 001 - 5 000",
+		founded: "Since 2009-2014",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQFnjYaT3-0pCQ/company-logo_200_200/company-logo_200_200/0/1735806566171/gmv_logo?e=1752105600&v=beta&t=LgVltPMF9racLnAONDh07Wj56-Ovbmby-OQP6ZK7KZw"
+            },
+{
+                name: "GMV [UK]",
+                activity: "GMV has led several SST-related studies in the last years for the UK Space Agency (UKSA), STFC and Dstl as part of the UK’s contribution to the EU SST and its national initiatives in this field.",
+                city: "Didcot",
+                country: "United Kingdom",
+                lat: 51.60928,
+                lon: -1.24214,
+                web: "https://www.gmv.com/en-es/sectors/space#space-surveillance-and-tracking-and-space-traffic-management-608",
+                linkedin: "https://www.linkedin.com/company/gmv/about/",
+		theme: "Pure Data Players",
+		employees: "1 001 - 5 000",
+		founded: "Since 2009-2014",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQFnjYaT3-0pCQ/company-logo_200_200/company-logo_200_200/0/1735806566171/gmv_logo?e=1752105600&v=beta&t=LgVltPMF9racLnAONDh07Wj56-Ovbmby-OQP6ZK7KZw"
+            },
+        ];
+
+        // Prépare une liste de thèmes
+        const themes = [
+            "Integrated Players",
+            "Pure Data Players",
+	    "Institutionnal"
+        ];
+
+const themeColors = {
+    "Integrated Players": "black",
+    "Pure Data Players": "green",
+    "Institutionnal": "blue"
+};
+
+        // Création de la carte
+const map = L.map('map').setView([48.5, 8], 5);
+
+// Icônes personnalisées (même forme, couleurs différentes)
+
+const redIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors | CS Group'
+}).addTo(map);
+
+let markersLayer = L.layerGroup().addTo(map);
+
+// Affiche les marqueurs filtrés
+function updateMarkers() {
+  markersLayer.clearLayers();
+
+  const selectedThemes = Array.from(document.querySelectorAll('input[name="theme"]:checked')).map(cb => cb.value);
+  const selectedCountries = Array.from(document.querySelectorAll('input[name="country"]:checked')).map(cb => cb.value);
+
+  companies.forEach(company => {
+    const matchesTheme = selectedThemes.length === 0 || selectedThemes.some(theme => (company.theme || []).includes(theme));
+    const matchesCountry = selectedCountries.length === 0 || selectedCountries.includes(company.country);
+
+    if (company.lat && company.lon && matchesTheme && matchesCountry) {
+      let icon = redIcon; // Icône par défaut est rouge
+
+      if (company.theme && themeColors[company.theme]) {
+        let iconColor = themeColors[company.theme];
+        icon = new L.Icon({
+            iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${iconColor}.png`,
+            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+      }
+
+L.marker([company.lat, company.lon], { icon })
+  .addTo(markersLayer)
+ .bindPopup(`
+  <div style="display: flex; align-items: flex-start;">
+    ${company.logo ? `
+      <div style="margin-right:10px;text-align:center;">
+        <img src="${company.logo}" alt="${company.name}" style="width:100px;height:100px;object-fit:contain;"><br>
+        <small>${company.founded || "N/A"}</small>
+      </div>
+    ` : ''}
+    <div>
+      <strong>${company.name}</strong><br>
+      <em>${company.city}, ${company.country}</em><br>
+      ${company.employees ? `<small>👥 ${company.employees} employees</small><br>` : ''}
+      <small>${company.activity || ""}</small><br>
+      ${company.web ? `<a href="${company.web}" target="_blank">Site web</a> | ` : ''}
+      ${company.linkedin ? `<a href="${company.linkedin}" target="_blank">LinkedIn</a>` : ''}
+    </div>
+  </div>
+`);
+    }
+  });
+}
+// Génère les cases à cocher dynamiquement
+function createCheckboxes(containerId, items) {
+  const container = document.getElementById(containerId);
+  items.forEach(item => {
+    const label = document.createElement('label');
+    label.innerHTML = `<input type="checkbox" value="${item}" checked> ${item}`;
+    container.appendChild(label);
+  });
+}
+
+// Init thèmes et pays
+createCheckboxes('theme-checkboxes', themes);
+const countries = [...new Set(companies.map(c => c.country))].sort();
+createCheckboxes('country-checkboxes', countries);
+
+// Récupère les valeurs cochées
+function getSelectedValues(containerId) {
+  return Array.from(document.querySelectorAll(`#${containerId} input:checked`)).map(input => input.value);
+}
+
+// Met à jour les marqueurs au changement
+document.getElementById('filter-box').addEventListener('change', () => {
+  const selectedThemes = getSelectedValues('theme-checkboxes');
+  const selectedCountries = getSelectedValues('country-checkboxes');
+  updateMarkers(selectedThemes, selectedCountries);
+});
+
+// Déplie / replie un groupe
+function toggleFilter(contentId, arrowId) {
+  const content = document.getElementById(contentId);
+  const arrow = document.getElementById(arrowId);
+
+  if (content.classList.contains('open')) {
+    content.classList.remove('open');
+    arrow.textContent = '◀';
+  } else {
+    content.classList.add('open');
+    arrow.textContent = '▼';
+  }
+}
+
+// Affichage initial complet
+updateMarkers(themes, countries);
+</script>
+
+</body>
+</html>
