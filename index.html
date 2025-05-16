@@ -118,6 +118,7 @@
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+
 <script>
         // Tableau combiné des entreprises européennes (Flood Management)
         const companies = [
@@ -3522,6 +3523,7 @@ const themeColors = {
         // Création de la carte
 const map = L.map('map').setView([35, 2], 2.5);
 
+
 // Icônes personnalisées (même forme, couleurs différentes)
 
 const redIcon = new L.Icon({
@@ -3593,6 +3595,9 @@ function createCheckboxes(containerId, items) {
   const container = document.getElementById(containerId);
   items.forEach(item => {
     const label = document.createElement('label');
+    const color = themeColors[item] || 'black';
+    label.style.color = color;
+
     label.innerHTML = `<input type="checkbox" name="${containerId.includes('theme') ? 'theme' : 'country'}" value="${item}" checked> ${item}`;
     container.appendChild(label);
   });
