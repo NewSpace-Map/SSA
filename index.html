@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Carte des entreprises européennes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    #map {
+      height: 100%;
+      width: 100%;
+    }
+    #filter-box {
+      position: absolute;
+      top: 200px;
+      left: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      padding: 15px;
+      width: 200px;
+      z-index: 1000;
+    }
+    #filter-box h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 18px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 5px;
+    }
+    .filter-group {
+      margin-bottom: 15px;
+    }
+    .filter-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      padding: 5px 0;
+      user-select: none;
+    }
+    .filter-arrow {
+      transition: transform 0.3s ease;
+      font-size: 16px;
+    }
+    .filter-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+    }
+    .filter-content.open {
+      max-height: 300px;
+      margin-top: 8px;
+    }
+    .filter-scrollable {
+      max-height: 200px;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+    .filter-scrollable label {
+      display: block;
+      margin: 5px 0;
+      font-size: 14px;
+    }
+    .filter-scrollable::-webkit-scrollbar {
+      width: 6px;
+    }
+    .filter-scrollable::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="map"></div>
+
+<!-- Boîte de filtres -->
+<div id="filter-box">
+  <h3>Filters</h3>
+
+  <div class="filter-group"> 
+  <div class="filter-header" onclick="toggleFilter('theme-content', 'theme-arrow')">
+    <strong>Topics</strong>
+    <span id="theme-arrow" class="filter-arrow open">◀</span>
+  </div>
+  <div id="theme-content" class="filter-content open">
+    <div class="filter-scrollable" id="theme-checkboxes">
+      <!-- Cases à cocher Thèmes -->
+    </div>
+  </div>
+</div>
+
+  <div class="filter-group">
+    <div class="filter-header" onclick="toggleFilter('country-content', 'country-arrow')">
+      <strong>Countries</strong>
+      <span id="country-arrow" class="filter-arrow">◀</span>
+    </div>
+    <div id="country-content" class="filter-content">
+      <div class="filter-scrollable" id="country-checkboxes">
+        <!-- Cases à cocher Pays -->
+      </div>
+    </div>
+  </div>
+
+ </div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+
+<script>
+        // Tableau combiné des entreprises européennes (Flood Management)
+        const companies = [
+ {
+                name: "CS Group",
+		localisation: "[FR, HQ]",
+                activity: "Thanks to the above advanced skills and products, CS GROUP have been able to build one of the strongest forces in Europe for Space Surveillance answering to both civilian and military operational needs. For CNES, CS GROUP has been in charge, for many years, of Space Surveillance studies & developments, and operational activities​​",
+                city: "Toulouse",
+                country: "France",
+                lat: 43.577639584905924,
+                lon: 1.4946606087979109,
+                web: "https://www.cs-soprasteria.com/en/strategic-sectors/space/",
+                linkedin: "https://www.linkedin.com/showcase/csgroup-space/about/",
+		theme: "Pure Data Players",
+		employees: "1 001 - 5 000",
+		founded: "Founded in 1990",
+		logo: "https://media.licdn.com/dms/image/v2/C4D0BAQGEL4F7fEyM4w/company-logo_200_200/company-logo_200_200/0/1630549644264/space_cs_logo?e=1752105600&v=beta&t=lIllKjqqj8gkPMAfyzEYsA1nHqHoaxkA5q1mmswnlNM"
+            },
+{
+                name: "CS Group",
+		localisation: "[GE]",
+                activity: "Thanks to the above advanced skills and products, CS GROUP have been able to build one of the strongest forces in Europe for Space Surveillance answering to both civilian and military operational needs. For CNES, CS GROUP has been in charge, for many years, of Space Surveillance studies & developments, and operational activities​​",
+                city: "Darmstadt",
+                country: "Germany",
+                lat: 49.86566033100317,
+                lon: 8.633820955087721,
+                web: "https://www.cs-soprasteria.com/en/strategic-sectors/space/",
+                linkedin: "https://www.linkedin.com/showcase/csgroup-space/about/",
+		theme: "Pure Data Players",
+		employees: "1 001 - 5 000",
+		founded: "Founded in 1990",
+		logo: "https://media.licdn.com/dms/image/v2/C4D0BAQGEL4F7fEyM4w/company-logo_200_200/company-logo_200_200/0/1630549644264/space_cs_logo?e=1752105600&v=beta&t=lIllKjqqj8gkPMAfyzEYsA1nHqHoaxkA5q1mmswnlNM"
+            },
+{
+                name: "CS Group",
+		localisation: "[RO]",
+                activity: "Thanks to the above advanced skills and products, CS GROUP have been able to build one of the strongest forces in Europe for Space Surveillance answering to both civilian and military operational needs. For CNES, CS GROUP has been in charge, for many years, of Space Surveillance studies & developments, and operational activities​​",
+                city: "Cracovia",
+                country: "Romania",
+                lat: 44.324552930035914,
+                lon: 23.803826268496383,
+                web: "https://www.cs-soprasteria.com/en/strategic-sectors/space/",
+                linkedin: "https://www.linkedin.com/showcase/csgroup-space/about/",
+		theme: "Pure Data Players",
+		employees: "1 001 - 5 000",
+		founded: "Founded in 1990",
+		logo: "https://media.licdn.com/dms/image/v2/C4D0BAQGEL4F7fEyM4w/company-logo_200_200/company-logo_200_200/0/1630549644264/space_cs_logo?e=1752105600&v=beta&t=lIllKjqqj8gkPMAfyzEYsA1nHqHoaxkA5q1mmswnlNM"
+            },
+
+            {
+                name: "Vyoma",
+		localisation: "[DE, HQ]",
+                activity: "Vyoma plans to build and operate an innovative, satellite-based observation system for space debris monitoring, and collision warnings. Space Surveillance & Tracking Service.​​",
+                city: "Munich",
+                country: "Germany",
+                lat: 48.1665754,
+                lon: 11.5776184,
+                web: "https://www.vyoma.space/",
+                linkedin: "https://www.linkedin.com/company/vyomaspace/about/",
+		theme: "Integrated Players",
+		employees: "11 - 50",
+		founded: "Founded in 2020",
+		logo: "https://media.licdn.com/dms/image/v2/D4D0BAQENijE9m2_zIA/company-logo_200_200/company-logo_200_200/0/1701455047521/vyomaspace_logo?e=1752105600&v=beta&t=k8hB46XFhKBzsu0ltQpIUU7fsSO25MRZbe5joNK7Du0"
+            },
+{
+                name: "ALDORIA",
+		localisation: "[FR, HQ]",
+                activity: "Aldoria collects, processes and leverages space situational awareness data to protect critical assets in space. By actively monitoring space debris, satellites and derelicts, Aldoria helps operators and space agencies proactively avoid threats and adjust orbital paths.",
+                city: "Paris",
+                country: "France",
+                lat: 48.8654176,
+                lon: 2.3819734,
+                web: "https://www.aldoria.com/",
+                linkedin: "https://www.linkedin.com/company/aldoria/about/",
+		theme: "Integrated Players",
+		employees: "51 - 100",
+		founded: "Founded in 2017",
+		logo: "https://media.licdn.com/dms/image/v2/D4E0BAQEejG_Zivf-sw/company-logo_200_200/company-logo_200_200/0/1709630684393/aldoria_logo?e=1752105600&v=beta&t=q6pbK8NPUUZalxrJIbCj-VKBBVY-QuE94dh-k9lzGUU"
+            },
+
+{
+                name: "ALDORIA",
+		localisation: "[FR]",
+                activity: "Aldoria collects, processes and leverages space situational awareness data to protect critical assets in space. By actively monitoring space debris, satellites and derelicts, Aldoria helps operators and space agencies proactively avoid threats and adjust orbital paths.​​",
+                city: "Toulouse",
+                country: "France",
+                lat: 43.6054267,
+                lon: 1.4441202,
+                web: "https://www.aldoria.com/",
+                linkedin: "https://www.linkedin.com/company/aldoria/about/",
+		theme: "Integrated Players",
+		employees: "51 - 100",
+		founded: "Founded in 2017",
+		logo: "https://media.licdn.com/dms/image/v2/D4E0BAQEejG_Zivf-sw/company-logo_200_200/company-logo_200_200/0/1709630684393/aldoria_logo?e=1752105600&v=beta&t=q6pbK8NPUUZalxrJIbCj-VKBBVY-QuE94dh-k9lzGUU"
+            },
+{
+                name: "ALDORIA",
+		localisation: "[USA]",
+                activity: "Aldoria collects, processes and leverages space situational awareness data to protect critical assets in space. By actively monitoring space debris, satellites and derelicts, Aldoria helps operators and space agencies proactively avoid threats and adjust orbital paths.",
+                city: "Austin, TX",
+                country: "United States",
+                lat: 30.258911,
+                lon: -97.752543,
+                web: "https://www.aldoria.com/",
+                linkedin: "https://www.linkedin.com/company/aldoria/about/",
+		theme: "Integrated Players",
+		employees: "51 - 100",
+		founded: "Founded in 2017",
+		logo: "https://media.licdn.com/dms/image/v2/D4E0BAQEejG_Zivf-sw/company-logo_200_200/company-logo_200_200/0/1709630684393/aldoria_logo?e=1752105600&v=beta&t=q6pbK8NPUUZalxrJIbCj-VKBBVY-QuE94dh-k9lzGUU"
+            },
+{
+                name: "GMV",
+		localisation: "[ES, HQ]",
+                activity: "GMV is leading the Spanish Space Surveillance and Operations Center (S3TOC). GMV is also priming several EU SST-related R&D studies for Spain’s Industrial Technology Development Center (CDTI).",
+                city: "Madrid",
+                country: "Spain",
+                lat: 40.59131,
+                lon: -3.7065756,
+                web: "https://www.gmv.com/en-es/sectors/space#space-surveillance-and-tracking-and-space-traffic-management-608",
+                linkedin: "https://www.linkedin.com/company/gmv/about/",
+		theme: "Pure Data Players",
+		employees: "1 001 - 5 000",
+		founded: "Founded in 1984",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQFnjYaT3-0pCQ/company-logo_200_200/company-logo_200_200/0/1735806566171/gmv_logo?e=1752105600&v=beta&t=LgVltPMF9racLnAONDh07Wj56-Ovbmby-OQP6ZK7KZw"
+            },
+{
+                name: "GMV",
+		localisation: "[FR]",
+                activity: "GMV has been supporting CNES’s space debris activities since 2012. In Toulouse GMV is leading development and operation of CNES’ SST Simulation and Analysis Software (BAS3E), among other projects.",
+                city: "Ramonville-Saint-Agne",
+                country: "France",
+                lat: 43.5509557,
+                lon: 1.4875339,
+                web: "https://www.gmv.com/en-es/sectors/space#space-surveillance-and-tracking-and-space-traffic-management-608",
+                linkedin: "https://www.linkedin.com/company/gmv/about/",
+		theme: "Pure Data Players",
+		employees: "1 001 - 5 000",
+		founded: "Since 2012",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQFnjYaT3-0pCQ/company-logo_200_200/company-logo_200_200/0/1735806566171/gmv_logo?e=1752105600&v=beta&t=LgVltPMF9racLnAONDh07Wj56-Ovbmby-OQP6ZK7KZw"
+            },
+{
+                name: "EU SST",
+		localisation: "[UE]",
+                activity: "Space Surveillance and Tracking (SST) is part of the Space Situational Awareness (SSA) component of the EU Space Programme, adopted by the European Union in 2021 with the Regulation (EU) 2021/696 of the European Parliament and of the Council. This Regulation foresaw the creation of an SST Partnership composed of 15 EU Member States – Austria, Czech Republic, Denmark, Finland, France, Germany, Greece, Italy, Latvia, the Netherlands, Poland, Portugal, Romania, Spain and Sweden.",
+                city: "Madrid",
+                country: "Spain",
+                lat: 40.2110462,
+                lon: -3.5771806,
+                web: "https://www.eusst.eu/",
+                linkedin: "https://www.linkedin.com/company/eu-sst/about/",
+		theme: "Institutionnal",
+		employees: "51 - 100",
+		founded: "Founded in 2022",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQHdL0jJVM5xfw/company-logo_200_200/company-logo_200_200/0/1689850843104/eu_sst_logo?e=1752105600&v=beta&t=9jh80AfsqwJVZj4ZUQxYWbhgQJWgte52zxj13gJgg74"
+            },
+{
+                name: "SYBILLA",
+		localisation: "[PL, HQ]",
+                activity: "Sybilla Technologies has played a crucial role in research and development within the Space Situational Awareness program. Our focus on the Space Surveillance & Tracking (SST) and Near-Earth Object (NEO) segments has positioned us as a key player in safeguarding our skies.",
+                city: "Bydgoszcz",
+                country: "Poland",
+                lat: 53.1195452,
+                lon: 18.0260795,
+                web: "http://sybillatechnologies.com/",
+                linkedin: "https://www.linkedin.com/company/sybilla-technologies/about/",
+		theme: "Integrated Players",
+		employees: "11 - 50",
+		founded: "Founded in 2011",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQHivH2v6UV-hA/company-logo_200_200/company-logo_200_200/0/1689948012187/sybilla_technologies_logo?e=1752105600&v=beta&t=mPYBm7s_MjCVEvBD-okunbjN2Qbcc_bU8N_Am0rbM3A"
+            },
+{
+                name: "NorthStar Earth & Space",
+		localisation: "[CA, HQ]",
+                activity: "NorthStar’s space-based commercial Space Situational Awareness services address many of the critical and immediate challenges facing all satellite operators.  Striving to see every object in every orbit, NorthStar will deliver more frequent and precise observations of resident space objects than any other current system. Through a suite of high-speed decision quality information services derived from its unparalleled coverage, object custody, and enhanced predictive analytics, NorthStar generates its Space Information & Intelligence services.",
+                city: "Montreal",
+                country: "Canada",
+                lat: 45.5020074,
+                lon: -73.5595211,
+                web: "https://northstar-data.com/",
+                linkedin: "https://www.linkedin.com/company/northstar-earth-and-space/about/",
+		theme: "Integrated Players",
+		employees: "51 - 100",
+		founded: "Founded in 2015",
+		logo:"https://media.licdn.com/dms/image/v2/C4E0BAQHHLCGTmlxzwQ/company-logo_200_200/company-logo_200_200/0/1668174495141/northstar_earth_and_space_inc_logo?e=1752105600&v=beta&t=qRFzCGo2I9l8ehEmWmOhZcB3xn_ytMv7G4RPNjJycCg"
+            },
+{
+                name: "Unseenlabs",
+		localisation: "[FR, HQ]",
+                activity: "Unseenlabs satellite constellation specifically detects, characterizes and geolocates RF signals coming from a wide range of emitters. It covers sea areas of 300 000 square kilometers! In 2026, we’ll be launching a new constellation called “Generation NexT” which will detect RF from sea but also on earth and space.",
+                city: "Rennes",
+                country: "France",
+                lat: 48.136741638183594,
+                lon: -1.6210895776748657,
+                web: "https://unseenlabs.space/our-product/",
+                linkedin: "https://www.linkedin.com/company/unseenlabs/about/",
+		theme: "Integrated Players",
+		employees: "51 - 200",
+		founded: "Founded in 2015",
+		logo:"https://media.licdn.com/dms/image/v2/C560BAQGmqs4oxnhaCg/company-logo_200_200/company-logo_200_200/0/1630583013347/unseenlabs_logo?e=1752105600&v=beta&t=gNtGGqYukaHiTn2BEKFXr4I-7igqUP3vufWTiYvecc4"
+            },
+{
+                name: "Look Up",
+		localisation: "[FR, HQ]",
+                activity: "Look Up is a pioneering company specializing in space situational awareness (SSA), space domain awareness (SDA) and space operations services. Our mission is to ensure the sustainable use of space by providing advanced solutions that protect and optimize satellite operations.",
+                city: "Toulouse",
+                country: "France",
+                lat: 43.5617866,
+                lon: 1.4959209,
+                web: "https://www.lookupspace.com/",
+                linkedin: "https://www.linkedin.com/company/look-up-space/about/",
+		theme: "Integrated Players",
+		employees: "51 - 200",
+		founded: "Founded in 2022",
+		logo:"https://media.licdn.com/dms/image/v2/D4E0BAQHKDRitcEcg5g/company-logo_200_200/company-logo_200_200/0/1728895156250/look_up_space_logo?e=1752105600&v=beta&t=j7qPtZPZe0CRNdQArW2BfvYMBeMTFo0X_ibBKAh3vz0"
+            },
+{
+                name: "Kratos Defense and Security Solutions",
+		localisation: "[USA, HQ]",
+                activity: "Kratos develops and fields transformative, affordable systems, platforms and products for national security and communications needs. Kratos is specialised in areas such as unmanned systems, satellite communications, Satellite Tracking Services, Space Domain Awareness (SDA)...",
+                city: "San Diego, CA",
+                country: "United States",
+                lat: 32.9127423,
+                lon: -117.1139619,
+                web: "http://www.kratosdefense.com/",
+                linkedin: "https://www.linkedin.com/company/kratos-defense-and-security-solutions/about/",
+		theme: "Integrated Players",
+		employees: "1 001 - 5 000",
+		founded: "Founded in 2004",
+		logo:"https://media.licdn.com/dms/image/v2/C4E0BAQEnWo1_nYQ5UA/company-logo_200_200/company-logo_200_200/0/1630580599593/kratos_defense_and_security_solutions_logo?e=1752105600&v=beta&t=2-MVYhLp2OMJRDVH_RjliQHG2rwGjHaPmz1DjLFUxT8"
+            },
+{
+                name: "EOS",
+		localisation: "[AUS, HQ]",
+                activity: "Delivers world-leading electro-optic equipment, systems, and facilities for space domain awareness (SDA), space surveillance day/night, space control, and communications—trusted by international space agencies, satellite operators, and defence organisations. Capabilities include laser beam director telescopes, high-powered laser systems, enhanced imaging systems, fully autonomous software controls, and software for optical ground station networks and SDA services.",
+                city: "Canberra",
+                country: "Australia",
+                lat: -35.3347066,
+                lon: 149.1655711,
+                web: "http://www.eos-aus.com/",
+                linkedin: "https://www.linkedin.com/company/electro-optic-systems-pty-limited/about/",
+		theme: "Integrated Players",
+		employees: "201 - 500",
+		founded: "Founded in 1983",
+		logo:"https://media.licdn.com/dms/image/v2/C560BAQGiDSzKkLzR3Q/company-logo_200_200/company-logo_200_200/0/1657586425732/electro_optic_systems_pty_limited_logo?e=1752105600&v=beta&t=dHYG-AFDED7uLUPS3OBYkeAvWLLJJwWfCgvrchla7Vg"
+            },
+{
+                name: "Leolabs",
+		localisation: "[USA, HQ]",
+                activity: "LeoLabs is the world’s leading mission partner for persistent Orbital Intelligence. We enable military space commands, civil government agencies, and commercial operators to confidently detect, track, characterize, and respond to threats in space. Our proliferated, multi-mission radar network, real-time orbital data catalog, and AI-powered analytics support secure, safe, and dynamic space operations. We are committed to delivering the living map of activity in space that safeguards our way of life on Earth.",
+                city: "Menlo Park, CA",
+                country: "United States",
+                lat: 37.47975655499095,
+                lon: -122.17881855149884,
+                web: "http://www.leolabs.space/",
+                linkedin: "https://www.linkedin.com/company/leolabs-space/about/",
+		theme: "Integrated Players",
+		employees: "51 - 200",
+		founded: "Founded in 2016",
+		logo:"https://media.licdn.com/dms/image/v2/C560BAQFy7_NDK3fbhQ/company-logo_200_200/company-logo_200_200/0/1671048259772/leolabs_space_logo?e=1752105600&v=beta&t=AK8vBvg0Plt-KavoAHClQu1AWlBt-yDlV3ZgpIC6330"
+            },
+{
+                name: "SPACEFLUX",
+		localisation: "[UK, HQ]",
+                activity: "Spaceflux is goal is tackling the problem of space congestion. With our optical sensor network and a unique, AI-driven analytics platform, we provide unparalleled tracking and mapping services for space objects. Our dynamic analytics can offer actionable insights about objects’ characteristics and behaviors derived from static image data. Catering primarily to satellite operators, governments, and the insurance industry, our goal is to reduce congestion and create a safer space environment.",
+                city: "London",
+                country: "United Kingdom",
+                lat: 51.541652490959216,
+                lon: -0.09562040089928252,
+                web: "https://spaceflux.io/",
+                linkedin: "https://www.linkedin.com/company/spaceflux-ltd/about/",
+		theme: "Integrated Players",
+		employees: "11 - 50",
+		founded: "Founded in 2022",
+		logo:"https://media.licdn.com/dms/image/v2/D4E0BAQE75JTyZ_OWnw/company-logo_200_200/company-logo_200_200/0/1681301475167/spaceflux_ltd_logo?e=1752105600&v=beta&t=1DSPRtBUwI-VuhpRdVHGlMp-aG-EF3_l97-lbzvF9QQ"
+            },
+{
+                name: "Infinite Orbits",
+		localisation: "[FR, HQ]",
+                activity: "Infinite Orbits is a NewSpace company that is revolutionizing In-Orbit Services with innovative spacecrafts powered by its Rendez Vous solution, an advanced autonomous vision-based navigation software. We design, own and operate ‘Servicers’ to provide innovative in-orbit services to satellite operators in geostationary orbit.",
+                city: "Toulouse",
+                country: "France",
+                lat: 43.59287775058488,
+                lon: 1.4458913413313903,
+                web: "http://www.infiniteorbits.io/",
+                linkedin: "https://www.linkedin.com/company/infinite-orbits/about/",
+		theme: "Integrated Players",
+		employees: "51 - 100",
+		founded: "Founded in 2017",
+		logo:"https://media.licdn.com/dms/image/v2/D4E0BAQHMX4O5-NFXbQ/company-logo_200_200/company-logo_200_200/0/1700230581424/infinite_orbits_logo?e=1752105600&v=beta&t=gPixF0vDH-rB86vyoaBQlc0yVFhtUy5OImanngF2QDU"
+            },
+{
+                name: "Infinite Orbits",
+		localisation: "[SGP]",
+                activity: "Infinite Orbits is a NewSpace company that is revolutionizing In-Orbit Services with innovative spacecrafts powered by its Rendez Vous solution, an advanced autonomous vision-based navigation software. We design, own and operate ‘Servicers’ to provide innovative in-orbit services to satellite operators in geostationary orbit.",
+                city: "Singapore",
+                country: "Singapore",
+                lat: 1.2899497435807574,
+                lon: 103.84949831872906,
+                web: "http://www.infiniteorbits.io/",
+                linkedin: "https://www.linkedin.com/company/infinite-orbits/about/",
+		theme: "Integrated Players",
+		employees: "51 - 100",
+		founded: "Founded in 2017",
+		logo:"https://media.licdn.com/dms/image/v2/D4E0BAQHMX4O5-NFXbQ/company-logo_200_200/company-logo_200_200/0/1700230581424/infinite_orbits_logo?e=1752105600&v=beta&t=gPixF0vDH-rB86vyoaBQlc0yVFhtUy5OImanngF2QDU"
+            },
+{
+                name: "Infinite Orbits",
+		localisation: "[USA]",
+                activity: "Infinite Orbits is a NewSpace company that is revolutionizing In-Orbit Services with innovative spacecrafts powered by its Rendez Vous solution, an advanced autonomous vision-based navigation software. We design, own and operate ‘Servicers’ to provide innovative in-orbit services to satellite operators in geostationary orbit.",
+                city: "Camden, DE",
+                country: "United States",
+                lat: 39.12128843740145,
+                lon: -75.5342534183561,
+                web: "http://www.infiniteorbits.io/",
+                linkedin: "https://www.linkedin.com/company/infinite-orbits/about/",
+		theme: "Integrated Players",
+		employees: "51 - 100",
+		founded: "Founded in 2017",
+		logo:"https://media.licdn.com/dms/image/v2/D4E0BAQHMX4O5-NFXbQ/company-logo_200_200/company-logo_200_200/0/1700230581424/infinite_orbits_logo?e=1752105600&v=beta&t=gPixF0vDH-rB86vyoaBQlc0yVFhtUy5OImanngF2QDU"
+            },
+{
+                name: "Safran Data Systems",
+		localisation: "[FR, HQ]",
+                activity: "Safran Data Systems, with its “WeTrack” tool, offers its customers the ability to have precise knowledge of the satellites orbiting the Earth, as well as an accurate picture of communications in the electromagnetic spectrum.",
+                city: "Les Ulis",
+                country: "France",
+                lat: 48.67924341494428,
+                lon: 2.195272264279018,
+                web: "https://www.safran-group.com/fr/societes/safran-data-systems",
+                linkedin: "https://www.linkedin.com/company/safran/about/",
+		theme: "Integrated Players",
+		employees: "+ 60 000",
+		founded: "Founded in 2005",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQF12gJLvR-O3Q/company-logo_200_200/company-logo_200_200/0/1631345488529?e=1752105600&v=beta&t=rhWtWQdhT0QvE6MOpprNAIxbF9U_qVNIc01nDNOYhIw"
+            },
+{
+                name: "Safran Data Systems",
+		localisation: "[FR]",
+                activity: "Safran Data Systems, with its “WeTrack” tool, offers its customers the ability to have precise knowledge of the satellites orbiting the Earth, as well as an accurate picture of communications in the electromagnetic spectrum.",
+                city: "Colombelles",
+                country: "France",
+                lat: 49.18746429148818,
+                lon: -0.30881588911980234,
+                web: "https://www.safran-group.com/fr/societes/safran-data-systems",
+                linkedin: "https://www.linkedin.com/company/safran/about/",
+		theme: "Integrated Players",
+		employees: "+ 60 000",
+		founded: "Founded in 2005",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQF12gJLvR-O3Q/company-logo_200_200/company-logo_200_200/0/1631345488529?e=1752105600&v=beta&t=rhWtWQdhT0QvE6MOpprNAIxbF9U_qVNIc01nDNOYhIw"
+            },
+{
+                name: "Safran Data Systems",
+		localisation: "[USA]",
+                activity: "Safran Data Systems, with its “WeTrack” tool, offers its customers the ability to have precise knowledge of the satellites orbiting the Earth, as well as an accurate picture of communications in the electromagnetic spectrum.",
+                city: "Norcross, GA",
+                country: "United States",
+                lat: 33.95555595425112,
+                lon: -84.20843270133712,
+                web: "https://www.safran-group.com/fr/societes/safran-data-systems",
+                linkedin: "https://www.linkedin.com/company/safran/about/",
+		theme: "Integrated Players",
+		employees: "+ 60 000",
+		founded: "Founded in 2005",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQF12gJLvR-O3Q/company-logo_200_200/company-logo_200_200/0/1631345488529?e=1752105600&v=beta&t=rhWtWQdhT0QvE6MOpprNAIxbF9U_qVNIc01nDNOYhIw"
+            },
+{
+                name: "Digantara",
+		localisation: "[IND, HQ]",
+                activity: "Digantara is a space situational awareness company that is developing an end-to-end infrastructure to address the difficulties of space operations and space traffic management through its pioneering Space - Mission Assurance Platform a.k.a. Space - MAP. ",
+                city: "Bangaluru",
+                country: "India",
+                lat: 13.047125269100492,
+                lon: 77.58142995350217,
+                web: "https://www.digantara.co.in/",
+                linkedin: "https://www.linkedin.com/company/digantara/about/",
+		theme: "Integrated Players",
+		employees: "51 - 200",
+		founded: "Founded in 2020",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQGvv8P7si2n2g/company-logo_200_200/B4DZWAY0OuHYAI-/0/1741615749963?e=1752105600&v=beta&t=N_-50ulwW1wkomnT_q19oLzkfv_zptm1VaNdjSiXK1g"
+            },
+{
+                name: "Digantara",
+		localisation: "[USA]",
+                activity: "Digantara is a space situational awareness company that is developing an end-to-end infrastructure to address the difficulties of space operations and space traffic management through its pioneering Space - Mission Assurance Platform a.k.a. Space - MAP. ",
+                city: "Colorado Spring, CO",
+                country: "United States",
+                lat: 38.83610479198719,
+                lon: -104.82052124106347,
+                web: "https://www.digantara.co.in/",
+                linkedin: "https://www.linkedin.com/company/digantara/about/",
+		theme: "Integrated Players",
+		employees: "51 - 200",
+		founded: "Founded in 2020",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQGvv8P7si2n2g/company-logo_200_200/B4DZWAY0OuHYAI-/0/1741615749963?e=1752105600&v=beta&t=N_-50ulwW1wkomnT_q19oLzkfv_zptm1VaNdjSiXK1g"
+            },
+{
+                name: "Digantara",
+		localisation: "[SGP]",
+                activity: "Digantara is a space situational awareness company that is developing an end-to-end infrastructure to address the difficulties of space operations and space traffic management through its pioneering Space - Mission Assurance Platform a.k.a. Space - MAP. ",
+                city: "Singapore",
+                country: "Singapore",
+                lat: 1.278962087577033,
+                lon: 103.84835947980655,
+                web: "https://www.digantara.co.in/",
+                linkedin: "https://www.linkedin.com/company/digantara/about/",
+		theme: "Integrated Players",
+		employees: "51 - 200",
+		founded: "Founded in 2020",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQGvv8P7si2n2g/company-logo_200_200/B4DZWAY0OuHYAI-/0/1741615749963?e=1752105600&v=beta&t=N_-50ulwW1wkomnT_q19oLzkfv_zptm1VaNdjSiXK1g"
+            },
+{
+                name: "Hemeria",
+		localisation: "[FR, HQ]",
+                activity: "HEMERIA markets space surveillance services and provides data from radar sensors based on GRAVES technology. With privileged access to the 1st European GRAVES space surveillance system, and thanks to the use of the MEDOC passive receiving station developed by ONERA, enabling autonomous detection and restitution of the orbits of objects in low-Earth orbit, HEMERIA provides its customers with highly competitive access to space surveillance, based on a mature technological solution. ",
+                city: "Toulouse",
+                country: "France",
+                lat: 43.54734299766302,
+                lon: 1.3969277659150496,
+                web: "https://www.hemeria-group.com/",
+                linkedin: "https://www.linkedin.com/company/hemeria-company/about/",
+		theme: "Integrated Players",
+		employees: "201 - 500",
+		founded: "Founded in 2019",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQErV8oE7SHS2g/company-logo_200_200/company-logo_200_200/0/1630544035508/hemeria_company_logo?e=1752105600&v=beta&t=qk8xb4VTbW02N_9P5WXoeqfS4YTrryNpEeuGUGs672U"
+            },
+{
+                name: "Slingshot",
+		localisation: "[USA, HQ]",
+                activity: "Slingshot Aerospace provides satellite tracking, space traffic coordination, and space modeling and simulation solutions to government and commercial customers around the world. Using mission-critical data, insights, and applications powered by the Slingshot Platform, space operators improve spaceflight safety and optimize their orbital operations. Slingshot’s platform combines data from the Slingshot Global Sensor Network, the Slingshot Seradata satellite and launch database, satellite owner-operators, and other third-party space data providers, to create the most up-to-date representation of space on the market today.",
+                city: "Colorado Spring, CO",
+                country: "United States",
+                lat: 40.439698514871964,
+                lon: -104.96773205934146,
+                web: "https://slingshot.space/",
+                linkedin: "https://www.linkedin.com/company/slingshot-aerospace/about/",
+		theme: "Integrated Players",
+		employees: "51 - 200",
+		founded: "Founded in 2017",
+		logo:"https://media.licdn.com/dms/image/v2/D560BAQEppNjV41BYqg/company-logo_200_200/company-logo_200_200/0/1707316190855/slingshot_aerospace_logo?e=1752105600&v=beta&t=G3SERh8YPSnu2AcMQZZNd6mSCQz6_JzErNozU_Xyg8M"
+            },
+{
+                name: "Slingshot",
+		localisation: "[UK]",
+                activity: "Slingshot Aerospace provides satellite tracking, space traffic coordination, and space modeling and simulation solutions to government and commercial customers around the world. Using mission-critical data, insights, and applications powered by the Slingshot Platform, space operators improve spaceflight safety and optimize their orbital operations. Slingshot’s platform combines data from the Slingshot Global Sensor Network, the Slingshot Seradata satellite and launch database, satellite owner-operators, and other third-party space data providers, to create the most up-to-date representation of space on the market today.",
+                city: "Cornwall",
+                country: "United Kingdom",
+                lat: 50.43810277720927,
+                lon: -4.996936953488272,
+                web: "https://slingshot.space/",
+                linkedin: "https://www.linkedin.com/company/slingshot-aerospace/about/",
+		theme: "Integrated Players",
+		employees: "51 - 200",
+		founded: "Founded in 2017",
+		logo:"https://media.licdn.com/dms/image/v2/D560BAQEppNjV41BYqg/company-logo_200_200/company-logo_200_200/0/1707316190855/slingshot_aerospace_logo?e=1752105600&v=beta&t=G3SERh8YPSnu2AcMQZZNd6mSCQz6_JzErNozU_Xyg8M"
+            },
+{
+                name: "Deimos Space",
+		localisation: "[ES, HQ]",
+                activity: "Extensive expertise in Space Situational Awareness activities across Europe, covering Space Surveillance and Tracking, Near Earth Objects and Space Weather. We provide operational and commercial services of analysis, design, development and operation of SSA systems.",
+                city: "Madrid",
+                country: "Spain",
+                lat: 40.60525757169757,
+                lon: -3.7183536341971517,
+                web: "https://deimos-space.com/space-safety/",
+                linkedin: "https://www.linkedin.com/company/deimos-space-company/about/",
+		theme: "Integrated Players",
+		employees: "201 - 500",
+		founded: "Founded in 2001",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQErF_AJN_FFgw/company-logo_200_200/company-logo_200_200/0/1646760987177/deimos_space_uk_limited_logo?e=1752105600&v=beta&t=UDTmC4MEbXcF_RR-SLQ4lG2aRyHpndL1HZ75wlM-KvE"
+            },
+{
+                name: "Deimos Space",
+		localisation: "[UK]",
+                activity: "Extensive expertise in Space Situational Awareness activities across Europe, covering Space Surveillance and Tracking, Near Earth Objects and Space Weather. We provide operational and commercial services of analysis, design, development and operation of SSA systems.",
+                city: "Didcot",
+                country: "United Kingdom",
+                lat: 51.5816017767843,
+                lon: -1.3117759159995355,
+                web: "https://deimos-space.com/space-safety/",
+                linkedin: "https://www.linkedin.com/company/deimos-space-uk-limited/about/",
+		theme: "Integrated Players",
+		employees: "11 - 50",
+		founded: "Since 2013",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQErF_AJN_FFgw/company-logo_200_200/company-logo_200_200/0/1646760987177/deimos_space_uk_limited_logo?e=1752105600&v=beta&t=UDTmC4MEbXcF_RR-SLQ4lG2aRyHpndL1HZ75wlM-KvE"
+            },
+{
+                name: "Deimos Romania",
+		localisation: "[RO]",
+                activity: "Extensive expertise in Space Situational Awareness activities across Europe, covering Space Surveillance and Tracking, Near Earth Objects and Space Weather. We provide operational and commercial services of analysis, design, development and operation of SSA systems.",
+                city: "Bucharest",
+                country: "Romania",
+                lat: 44.4505927686739,
+                lon: 26.083720217578005,
+                web: "https://deimos-space.com/space-safety/",
+                linkedin: "https://www.linkedin.com/company/deimos-space-company/about/",
+		theme: "Integrated Players",
+		employees: "201 - 500",
+		founded: "Founded in 2001",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQErF_AJN_FFgw/company-logo_200_200/company-logo_200_200/0/1646760987177/deimos_space_uk_limited_logo?e=1752105600&v=beta&t=UDTmC4MEbXcF_RR-SLQ4lG2aRyHpndL1HZ75wlM-KvE"
+            },
+{
+                name: "Deimos Engenharia",
+		localisation: "[PT]",
+                activity: "Extensive expertise in Space Situational Awareness activities across Europe, covering Space Surveillance and Tracking, Near Earth Objects and Space Weather. We provide operational and commercial services of analysis, design, development and operation of SSA systems.",
+                city: "Lisboa",
+                country: "Portugal",
+                lat: 38.73846041856433,
+                lon: -9.162626168646018,
+                web: "https://deimos-space.com/space-safety/",
+                linkedin: "https://www.linkedin.com/company/deimos-engenharia/about/",
+		theme: "Integrated Players",
+		employees: "51 - 200",
+		founded: "Since 2002",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQErF_AJN_FFgw/company-logo_200_200/company-logo_200_200/0/1646760987177/deimos_space_uk_limited_logo?e=1752105600&v=beta&t=UDTmC4MEbXcF_RR-SLQ4lG2aRyHpndL1HZ75wlM-KvE"
+            },
+{
+                name: "ExoAnalytic Solutions",
+		localisation: "[USA, HQ]",
+                activity: "Space domain awareness (SDA) is crucial to the safety and sustainability of space operations. Thanks to a worldwide network of over 350 telescopes, precise data on orbiting objects is collected in real time, enabling threats to be detected quickly and effective action taken. For over ten years, a rich and detailed database, including astrometric and photometric observations, has documented critical events such as maneuvers, anomalies or trajectory changes.",
+                city: "Foothill Ranch, CA",
+                country: "United States",
+                lat: 33.6725773,
+                lon: -117.6593437,
+                web: "http://exoanalytic.com/",
+                linkedin: "https://www.linkedin.com/company/exoanalytic-solutions/about/",
+		theme: "Integrated Players",
+		employees: "51 - 200",
+		founded: "Founded in 2008",
+		logo:"https://media.licdn.com/dms/image/v2/C560BAQHfjQxOwSm-zQ/company-logo_200_200/company-logo_200_200/0/1630670309044/exoanalytic_solutions_logo?e=1752105600&v=beta&t=Oa7oR4_CkpNiZJAp8wXICwZvSDtR6QWbK0yyr9gxs-g"
+            },
+{
+                name: "ArianeGroup",
+		localisation: "[FR, HQ]",
+                activity: "The Helix space surveillance service, developed and operated by ArianeGroup, enables the detection, tracking and characterization of space objects. Thanks to 24/7 continuous monitoring, it provides highly accurate positioning and orbitography data for space objects in low, medium and geostationary orbits. Giving early warning of unusual behavior, the Helix service enables state actors and private civil operators to take appropriate measures to protect their satellites from the risk of collision or interference. ",
+                city: "Les Mureaux",
+                country: "France",
+                lat: 48.99657440185547,
+                lon: 1.928208827972412,
+                web: "https://ariane.group/systemes-de-defense/surveillance-spatiale/",
+                linkedin: "https://www.linkedin.com/company/arianegroup/about/",
+		theme: "Integrated Players",
+		employees: "5 001 - 10 000",
+		founded: "Founded in 2015",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQFtxhWasktB-A/company-logo_200_200/company-logo_200_200/0/1630546950953/airbus_safran_launchers_logo?e=1752105600&v=beta&t=XeMoCBc_mprNKxSBHILYaR-N6H4st4nXf_I4FxDFH6Q"
+            },
+{
+                name: "ArianeGroup",
+		localisation: "[FR]",
+                activity: "The Helix space surveillance service, developed and operated by ArianeGroup, enables the detection, tracking and characterization of space objects. Thanks to 24/7 continuous monitoring, it provides highly accurate positioning and orbitography data for space objects in low, medium and geostationary orbits. Giving early warning of unusual behavior, the Helix service enables state actors and private civil operators to take appropriate measures to protect their satellites from the risk of collision or interference. ",
+                city: "Toulouse",
+                country: "France",
+                lat: 43.566674166579766,
+                lon: 1.4358351552130804,
+                web: "https://ariane.group/systemes-de-defense/surveillance-spatiale/",
+                linkedin: "https://www.linkedin.com/company/arianegroup/about/",
+		theme: "Integrated Players",
+		employees: "5 001 - 10 000",
+		founded: "Founded in 2015",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQFtxhWasktB-A/company-logo_200_200/company-logo_200_200/0/1630546950953/airbus_safran_launchers_logo?e=1752105600&v=beta&t=XeMoCBc_mprNKxSBHILYaR-N6H4st4nXf_I4FxDFH6Q"
+            },
+{
+                name: "ArianeGroup",
+		localisation: "[FR]",
+                activity: "The Helix space surveillance service, developed and operated by ArianeGroup, enables the detection, tracking and characterization of space objects. Thanks to 24/7 continuous monitoring, it provides highly accurate positioning and orbitography data for space objects in low, medium and geostationary orbits. Giving early warning of unusual behavior, the Helix service enables state actors and private civil operators to take appropriate measures to protect their satellites from the risk of collision or interference. ",
+                city: "Saint-Médard-en-Jalles",
+                country: "France",
+                lat: 44.874298573405774,
+                lon: -0.7430921787473459,
+                web: "https://ariane.group/systemes-de-defense/surveillance-spatiale/",
+                linkedin: "https://www.linkedin.com/company/arianegroup/about/",
+		theme: "Integrated Players",
+		employees: "5 001 - 10 000",
+		founded: "Founded in 2015",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQFtxhWasktB-A/company-logo_200_200/company-logo_200_200/0/1630546950953/airbus_safran_launchers_logo?e=1752105600&v=beta&t=XeMoCBc_mprNKxSBHILYaR-N6H4st4nXf_I4FxDFH6Q"
+            },
+{
+                name: "ArianeGroup",
+		localisation: "[FR]",
+                activity: "The Helix space surveillance service, developed and operated by ArianeGroup, enables the detection, tracking and characterization of space objects. Thanks to 24/7 continuous monitoring, it provides highly accurate positioning and orbitography data for space objects in low, medium and geostationary orbits. Giving early warning of unusual behavior, the Helix service enables state actors and private civil operators to take appropriate measures to protect their satellites from the risk of collision or interference. ",
+                city: "Vernon",
+                country: "France",
+                lat: 49.111289077804315,
+                lon: 1.4979018397124242,
+                web: "https://ariane.group/systemes-de-defense/surveillance-spatiale/",
+                linkedin: "https://www.linkedin.com/company/arianegroup/about/",
+		theme: "Integrated Players",
+		employees: "5 001 - 10 000",
+		founded: "Founded in 2015",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQFtxhWasktB-A/company-logo_200_200/company-logo_200_200/0/1630546950953/airbus_safran_launchers_logo?e=1752105600&v=beta&t=XeMoCBc_mprNKxSBHILYaR-N6H4st4nXf_I4FxDFH6Q"
+            },
+{
+                name: "SpaceNav",
+		localisation: "[USA, HQ]",
+                activity: "SpaceNav is specialized in Orbit Determination and Safety of flight capability and expertise.  We deliver SSA software solutions available as Software as a Service (SaaS) via https://advancedSSA.com or deployed within your facility as a Commercial off-the-Shelf (COTS) implementation. Ours product provide software for Collision Risk Management, Maneuver Optimization, Orbit Determination, and Covariance Realism. ",
+                city: "Boulder, CO",
+                country: "United States",
+                lat: 40.02306543149388,
+                lon: -105.26105643247456,
+                web: "https://www.space-nav.com/",
+                linkedin: "https://www.linkedin.com/company/spacenav/about/",
+		theme: "Pure Data Players",
+		employees: "11 - 50",
+		founded: "Founded in 2009",
+		logo:"https://media.licdn.com/dms/image/v2/C510BAQHavSe4TWdZ5g/company-logo_200_200/company-logo_200_200/0/1631387163020?e=1752105600&v=beta&t=A_zBBAO_wPTGfPxVtIBFpEt8mztfPSUAMcsyOf-kAq8"
+            },
+{
+                name: "Parsons Corporation",
+		localisation: "[USA, HQ]",
+                activity: "We’re at the forefront of advancing space situational awareness (SSA) for the National Oceanic and Atmospheric Administration’s (NOAA) Office of Space Commerce (OSC) through the innovative Traffic Coordination System for Space (TraCSS) program: a vital effort for the safety of our shared space environment and its assets in orbit. TraCSS that navigate and deconflict the complexities of congested space traffic while driving innovation and collaboration between governments and industry in the space domain. ",
+                city: "Chantilly, VA",
+                country: "United States",
+                lat: 38.873384128788516,
+                lon: -77.44215646248698,
+                web: "https://www.parsons.com/",
+                linkedin: "https://www.linkedin.com/company/parsons/about/",
+		theme: "Pure Data Players",
+		employees: "+ 10 000",
+		founded: "Founded in 1944",
+		logo:"https://media.licdn.com/dms/image/v2/C560BAQENkeiZ2Ukm_w/company-logo_200_200/company-logo_200_200/0/1657196831821?e=1752105600&v=beta&t=7vT8InakpwY2yT_mypk88D8WyIptv2fB9a1uB8Hb7fk"
+            },
+{
+                name: "Telespazio",
+		localisation: "[IT, HQ]",
+                activity: "Telespazio is specialized in multiples sectors: development of space systems to management of launch services and in orbit satellite control, monitoring of satellites and other orbiting objects (Space Domain Awareness); from Earth observation to integrated satellite communication, navigation and localisation services, and through to scientific programmes. Telespazio is a joint venture between Leonardo (67%) and Thales (33%). The company teams up with Thales Alenia Space to form the parent companies’ Space Alliance, a strategic partnership which offers a complete range of space services. ",
+                city: "Rome",
+                country: "Italy",
+                lat: 41.92739355341093,
+                lon: 12.574633197089321,
+                web: "https://www.telespazio.com/en/home",
+                linkedin: "https://www.linkedin.com/company/telespazio/about/",
+		theme: "Pure Data Players",
+		employees: "1 001 - 5 000",
+		founded: "Founded in 1961",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQE_858sy95Siw/company-logo_200_200/company-logo_200_200/0/1719255376770/telespazio_logo?e=1752105600&v=beta&t=2nlqjVC3xT0KpF-WbWkxMHdZ6vYVqcR5LmP_MGYGQM0"
+            },
+{
+                name: "Telespazio",
+		localisation: "[ES]",
+                activity: "Telespazio is specialized in multiples sectors: development of space systems to management of launch services and in orbit satellite control, monitoring of satellites and other orbiting objects (Space Domain Awareness); from Earth observation to integrated satellite communication, navigation and localisation services, and through to scientific programmes. Telespazio is a joint venture between Leonardo (67%) and Thales (33%). The company teams up with Thales Alenia Space to form the parent companies’ Space Alliance, a strategic partnership which offers a complete range of space services. ",
+                city: "Madrid",
+                country: "Spain",
+                lat: 40.486971980710614,
+                lon: -3.6693664672287998,
+                web: "https://www.telespazio.com/en/home",
+                linkedin: "https://www.linkedin.com/company/telespazio/about/",
+		theme: "Pure Data Players",
+		employees: "1 001 - 5 000",
+		founded: "Founded in 1961",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQE_858sy95Siw/company-logo_200_200/company-logo_200_200/0/1719255376770/telespazio_logo?e=1752105600&v=beta&t=2nlqjVC3xT0KpF-WbWkxMHdZ6vYVqcR5LmP_MGYGQM0"
+            },
+{
+                name: "Telespazio",
+		localisation: "[FR]",
+                activity: "Telespazio is specialized in multiples sectors: development of space systems to management of launch services and in orbit satellite control, monitoring of satellites and other orbiting objects (Space Domain Awareness); from Earth observation to integrated satellite communication, navigation and localisation services, and through to scientific programmes. Telespazio is a joint venture between Leonardo (67%) and Thales (33%). The company teams up with Thales Alenia Space to form the parent companies’ Space Alliance, a strategic partnership which offers a complete range of space services. ",
+                city: "Toulouse",
+                country: "France",
+                lat: 43.54441534780721,
+                lon: 1.3868390971518465,
+                web: "https://www.telespazio.com/en/home",
+                linkedin: "https://www.linkedin.com/company/telespazio/about/",
+		theme: "Pure Data Players",
+		employees: "1 001 - 5 000",
+		founded: "Founded in 1961",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQE_858sy95Siw/company-logo_200_200/company-logo_200_200/0/1719255376770/telespazio_logo?e=1752105600&v=beta&t=2nlqjVC3xT0KpF-WbWkxMHdZ6vYVqcR5LmP_MGYGQM0"
+            },
+{
+                name: "Telespazio",
+		localisation: "[FR]",
+                activity: "Telespazio is specialized in multiples sectors: development of space systems to management of launch services and in orbit satellite control, monitoring of satellites and other orbiting objects (Space Domain Awareness); from Earth observation to integrated satellite communication, navigation and localisation services, and through to scientific programmes. Telespazio is a joint venture between Leonardo (67%) and Thales (33%). The company teams up with Thales Alenia Space to form the parent companies’ Space Alliance, a strategic partnership which offers a complete range of space services. ",
+                city: "Paris",
+                country: "France",
+                lat: 48.84348763792264,
+                lon: 2.325717155112273,
+                web: "https://www.telespazio.com/en/home",
+                linkedin: "https://www.linkedin.com/company/telespazio/about/",
+		theme: "Pure Data Players",
+		employees: "1 001 - 5 000",
+		founded: "Founded in 1961",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQE_858sy95Siw/company-logo_200_200/company-logo_200_200/0/1719255376770/telespazio_logo?e=1752105600&v=beta&t=2nlqjVC3xT0KpF-WbWkxMHdZ6vYVqcR5LmP_MGYGQM0"
+            },
+{
+                name: "Telespazio",
+		localisation: "[DE]",
+                activity: "Telespazio is specialized in multiples sectors: development of space systems to management of launch services and in orbit satellite control, monitoring of satellites and other orbiting objects (Space Domain Awareness); from Earth observation to integrated satellite communication, navigation and localisation services, and through to scientific programmes. Telespazio is a joint venture between Leonardo (67%) and Thales (33%). The company teams up with Thales Alenia Space to form the parent companies’ Space Alliance, a strategic partnership which offers a complete range of space services. ",
+                city: "Darmstadt",
+                country: "Germany",
+                lat: 49.871891027427395,
+                lon: 8.626601884040374,
+                web: "https://www.telespazio.com/en/home",
+                linkedin: "https://www.linkedin.com/company/telespazio/about/",
+		theme: "Pure Data Players",
+		employees: "1 001 - 5 000",
+		founded: "Founded in 1961",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQE_858sy95Siw/company-logo_200_200/company-logo_200_200/0/1719255376770/telespazio_logo?e=1752105600&v=beta&t=2nlqjVC3xT0KpF-WbWkxMHdZ6vYVqcR5LmP_MGYGQM0"
+            },
+{
+                name: "COMSPOC",
+		localisation: "[USA, HQ]",
+                activity: "COMSPOC is a commercial provider of space situational awareness (SSA) software. We deliver solutions that characterize and protect space objects. Our software enables an organization to operate a secure SSA system that produces actionable analysis. COMSPOC also provides space traffic management (STM) and space domain awareness (SDA) services.",
+                city: "Exton, PA",
+                country: "United States",
+                lat: 40.03941576966373,
+                lon: -75.597256702981,
+                web: "https://www.comspoc.com/products/ssasuite",
+                linkedin: "https://www.linkedin.com/company/comspoc/about/",
+		theme: "Pure Data Players",
+		employees: "11 - 50",
+		founded: "Founded in 2015",
+		logo:"https://media.licdn.com/dms/image/v2/C4E0BAQGj-pwq9eygzA/company-logo_200_200/company-logo_200_200/0/1630642086867/comspoc_logo?e=1752105600&v=beta&t=vYSdD1fDDWKCoK-JAiTvg_p-N6F3Dgr5uXj9UthzeZQ"
+            },
+{
+                name: "German Aerospace Center (DLR)",
+		localisation: "[DE, HQ]",
+                activity: "DLR is the Federal Republic of Germany’s research centre for aeronautics and space. We conduct research and development activities in the fields of aeronautics, space, energy, transport, security and digitalisation. The German Space Agency at DLR plans and implements the national space programme on behalf of the federal government.",
+                city: "Köln",
+                country: "Germany",
+                lat: 50.855089265007386,
+                lon: 7.119610877436599,
+                web: "https://www.dlr.de/en",
+                linkedin: "https://www.linkedin.com/company/dlr/about/",
+		theme: "Space Agencies",
+		employees: "+ 10 001",
+		founded: "Founded in 1907",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQFfEdw17Awaew/company-logo_200_200/company-logo_200_200/0/1631365297820?e=1752105600&v=beta&t=TZZTgIRcSSHMg21B9BDNiiRBRHfkJ1KRYkiMrUWP1cc"
+            },
+{
+                name: "Office Of Space Commerce (TRACSS)",
+		localisation: "[USA, HQ]",
+                activity: "The Office of Space Commerce (OSC) is the principal unit for space commerce policy activities within the Department of Commerce. Its mission is to foster the conditions for the economic growth and technological advancement of the U.S. commercial space industry. OSC is also responsible for licensing commercial remote sensing space systems and for fielding the Traffic Coordination System for Space, #TraCSS.",
+                city: "Washington DC",
+                country: "United States",
+                lat: 38.893989424916654,
+                lon: -77.03242820302206,
+                web: "https://www.space.commerce.gov/traffic-coordination-system-for-space-tracss/",
+                linkedin: "https://www.linkedin.com/company/office-of-space-commerce/about/",
+		theme: "Institutionnal",
+		employees: "11 - 50",
+		founded: "Founded in 1988",
+		logo:"https://media.licdn.com/dms/image/v2/D4E0BAQEpyRUfwlDY2A/company-logo_200_200/B4EZW41I7OG0AI-/0/1742562695174/office_of_space_commerce_logo?e=1752105600&v=beta&t=rxBbqVFy4CQIYJMjmh-lSJbI4bZusugkM6af_NLG1co"
+            },
+{
+                name: "EUSPA",
+		localisation: "[CZ, HQ]",
+                activity: "The EU Agency for the Space Programme (EUSPA) provides safe and performant space services, enabling synergies, EU innovation, sustainability, and security. Space Situational Awareness (SSA) is an essential component of the EU Space Programme. By providing comprehensive knowledge and understanding about space hazards, SSA plays a key role in ensuring the safety and security of the European economies, societies and citizens who rely on space-based services for communication, navigation and observation applications.",
+                city: "Prague",
+                country: "Czech Republic",
+                lat: 50.098048847571214,
+                lon: 14.434551210920485,
+                web: "https://www.euspa.europa.eu/eu-space-programme/ssa",
+                linkedin: "https://www.linkedin.com/company/euspa/about/",
+		theme: "Institutionnal",
+		employees: "201 - 500",
+		founded: "Founded in 2021",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQEAWVzFJO57-g/company-logo_200_200/company-logo_200_200/0/1630523193218/euspa_logo?e=1752105600&v=beta&t=29XlLBzVYM7Xkhxs3vSfAzPdqkoArRSpmIC97XHK1NY"
+            },
+{
+                name: "CNES",
+		localisation: "[FR, HQ]",
+                activity: "CNES is the French space agency. It is a key tool in France's strategic autonomy, notably thanks to the defense space strategy. France has been joining forces with its partners in Space Surveillance and Tracking (SST) since 2014, to better detect and identify objects present in different orbits, and thus reduce the risk of in-orbit collisions.",
+                city: "Toulouse",
+                country: "France",
+                lat: 43.5617660439983,
+                lon: 1.481734891787091,
+                web: "https://cnes.fr/",
+                linkedin: "https://www.linkedin.com/company/cnes/about/",
+		theme: "Space Agencies",
+		employees: "1 001 - 5 000",
+		founded: "Founded in 1961",
+		logo:"https://media.licdn.com/dms/image/v2/D4E0BAQHiaEkdzaerug/company-logo_200_200/company-logo_200_200/0/1666702874070/cnes_logo?e=1752105600&v=beta&t=TGMD5oHHZhBgHcFlbFpaCHH567CX9o7I0vIAAi7cMEg"
+            },
+{
+                name: "CDE : Commandement de l'Espace",
+		localisation: "[FR, HQ]",
+                activity: "The Space Command (CDE) embodies the implementation of defense space strategy and plays a key role in the development of defense space. It advises the Armed Forces Chief of Staff and all organizations within and outside the Ministry on military space issues. In cooperation with numerous other players (e.g. CNES), it contributes to the definition and implementation of military space policy. It also conducts military space operations.",
+                city: "Toulouse",
+                country: "France",
+                lat: 43.55955939753712,
+                lon: 1.4822721025408372,
+                web: "https://www.defense.gouv.fr/cde",
+                linkedin: "https://www.linkedin.com/company/commandement-de-lespace/about/",
+		theme: "Institutionnal",
+		employees: "201 - 500",
+		founded: "Founded in 2019",
+		logo:"https://media.licdn.com/dms/image/v2/D4E0BAQEFlde3yXxXQg/company-logo_200_200/company-logo_200_200/0/1710767931622/commandement_de_lespace_logo?e=1752710400&v=beta&t=HxiNO2L3aoY8nTJwhQfHmleenkme_F8IcAXrA21OOvM"
+            },
+{
+                name: "United States Space Force (USSF)",
+		localisation: "[USA, HQ]",
+                activity: "The U.S. Space Force (USSF) is a new branch of the Armed Forces within the Department of the Air Force. The CSO is a full member of the Joint Chiefs of Staff.  He organizes, trains, and equips space forces in order to protect U.S. and allied interests in space and to provide space capabilities to the joint force. USSF responsibilities include developing military space professionals, acquiring military space systems, maturing the military doctrine for space power, and organizing space forces to present to our Combatant Commands.",
+                city: "Washington, VA",
+                country: "United States",
+                lat: 38.87193514965568,
+                lon: -77.05627998328148,
+                web: "https://www.spaceforce.mil/",
+                linkedin: "https://www.linkedin.com/company/spaceforcedod/about/",
+		theme: "Space Agencies",
+		employees: "+ 10 001",
+		founded: "Founded in 2019",
+		logo:"https://media.licdn.com/dms/image/v2/D4E0BAQHvXlWirsKoDA/company-logo_200_200/company-logo_200_200/0/1734456026767/spaceforcedod_logo?e=1752710400&v=beta&t=DubLbwxJLyPJlJ_ESLvTLwIdZkHsZHcFEYPEP2IF7Uo"
+            },
+{
+                name: "Eutelsat OneWeb",
+		localisation: "[UK, HQ]",
+                activity: "Space is the future for infinite connectivity on Earth. Eutelsat OneWeb is part of Eutelsat Group, the world’s first GEO-LEO satellite operator, delivering ubiquitous global connectivity. With a fleet of GEO satellites and a constellation of LEO satellites, we are a one-stop shop to offer the best of our networks to our customers.",
+                city: "London",
+                country: "United Kingdom",
+                lat: 51.51391490956755,
+                lon: -0.2265812601802157,
+                web: "http://www.oneweb.net/",
+                linkedin: "https://www.linkedin.com/company/eutelsatoneweb/about/",
+		theme: "Commercial operators",
+		employees: "201 - 500",
+		founded: "Founded in 2012",
+		logo:"https://media.licdn.com/dms/image/v2/D4E0BAQFI8onxbsXipA/company-logo_200_200/company-logo_200_200/0/1695894198750/onewebofficial_logo?e=1752710400&v=beta&t=6eUqfAckNF2wExeS2mwFgCfl7lDYT3iuGivKVBmLISo"
+            },
+{
+                name: "Starlink",
+		localisation: "[USA, HQ]",
+                activity: "Starlink is a satellite-based Internet access service developed and operated by Starlink Services, LLC, a wholly-owned subsidiary of U.S.-based SpaceX. Launched in 2015, Starlink aims to provide high-speed, low-latency Internet connectivity, particularly in rural or underserved areas, via a constellation of satellites in low-Earth orbit. By February 2025, the service had more than 5 million subscribers in 125 countries and territories.",
+                city: "Redmonton, WA",
+                country: "United States",
+                lat: 47.695798545530074,
+                lon: -122.03779745526177,
+                web: "https://www.starlink.com/",
+                linkedin: "https://www.linkedin.com/company/starlinkx/about/",
+		theme: "Commercial operators",
+		employees: "1 001 - 5 000",
+		founded: "Founded in 2015",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQEMbYLhMc5vZQ/company-logo_200_200/company-logo_200_200/0/1699986154877?e=1752710400&v=beta&t=LxisS_E9uiT5ujPVf95Gmhb39FMov24a9bFG4e5rOuY"
+            },
+{
+                name: "Airbus Defence & Space (ADS)",
+		localisation: "[FR]",
+                activity: "Airbus Defence and Space is a division of the Airbus Group specializing in defense, military aeronautics and space solutions. In SSA, Airbus Defence and Space develops and operates advanced capabilities to detect, track and catalog orbiting objects (satellites, space debris, etc.). It provides space traffic management (STM), collision avoidance and space risk analysis services for space agencies, armed forces and commercial operators. These activities are part of the drive to enhance the resilience and safety of Europe's space infrastructures.",
+                city: "Elancourt",
+                country: "France",
+                lat: 48.79799137486973,
+                lon: 1.9718635262053008,
+                web: "http://www.airbus.com/",
+                linkedin: "https://www.linkedin.com/company/airbus-defence-and-space/about/",
+		theme: "Others",
+		employees: "+ 10 000",
+		founded: "Founded in 2014",
+		logo:"https://media.licdn.com/dms/image/v2/C4E0BAQHiVUv4_8Usqw/company-logo_200_200/company-logo_200_200/0/1631362043684/airbus_defence_and_space_logo?e=1752710400&v=beta&t=d1pdIb4KkIdrViPec69gu3PlZlZWtbieY9ZvJottubs"
+            },
+{
+                name: "Airbus Defence & Space (ADS)",
+		localisation: "[FR]",
+                activity: "Airbus Defence and Space is a division of the Airbus Group specializing in defense, military aeronautics and space solutions. In SSA, Airbus Defence and Space develops and operates advanced capabilities to detect, track and catalog orbiting objects (satellites, space debris, etc.). It provides space traffic management (STM), collision avoidance and space risk analysis services for space agencies, armed forces and commercial operators. These activities are part of the drive to enhance the resilience and safety of Europe's space infrastructures.",
+                city: "Toulouse",
+                country: "France",
+                lat: 43.56023917812172,
+                lon: 1.4982543542854478,
+                web: "http://www.airbus.com/",
+                linkedin: "https://www.linkedin.com/company/airbus-defence-and-space/about/",
+		theme: "Others",
+		employees: "+ 10 000",
+		founded: "Founded in 2014",
+		logo:"https://media.licdn.com/dms/image/v2/C4E0BAQHiVUv4_8Usqw/company-logo_200_200/company-logo_200_200/0/1631362043684/airbus_defence_and_space_logo?e=1752710400&v=beta&t=d1pdIb4KkIdrViPec69gu3PlZlZWtbieY9ZvJottubs"
+            },
+{
+                name: "Airbus Defence & Space SA (CASA)",
+		localisation: "[SP]",
+                activity: "Airbus Defence and Space is a division of the Airbus Group specializing in defense, military aeronautics and space solutions. In SSA, Airbus Defence and Space develops and operates advanced capabilities to detect, track and catalog orbiting objects (satellites, space debris, etc.). It provides space traffic management (STM), collision avoidance and space risk analysis services for space agencies, armed forces and commercial operators. These activities are part of the drive to enhance the resilience and safety of Europe's space infrastructures.",
+                city: "Madrid",
+                country: "Spain",
+                lat: 40.29424789573983,
+                lon: -3.7115804286686798,
+                web: "http://www.airbus.com/",
+                linkedin: "https://www.linkedin.com/company/airbus-defence-and-space/about/",
+		theme: "Others",
+		employees: "+ 10 000",
+		founded: "Founded in 2014",
+		logo:"https://media.licdn.com/dms/image/v2/C4E0BAQHiVUv4_8Usqw/company-logo_200_200/company-logo_200_200/0/1631362043684/airbus_defence_and_space_logo?e=1752710400&v=beta&t=d1pdIb4KkIdrViPec69gu3PlZlZWtbieY9ZvJottubs"
+            },
+{
+                name: "Airbus Defence & Space GMBH ",
+		localisation: "[DE]",
+                activity: "Airbus Defence and Space is a division of the Airbus Group specializing in defense, military aeronautics and space solutions. In SSA, Airbus Defence and Space develops and operates advanced capabilities to detect, track and catalog orbiting objects (satellites, space debris, etc.). It provides space traffic management (STM), collision avoidance and space risk analysis services for space agencies, armed forces and commercial operators. These activities are part of the drive to enhance the resilience and safety of Europe's space infrastructures.",
+                city: "Taufkirchen",
+                country: "Germany",
+                lat: 48.051933645407594,
+                lon: 11.653779697052546,
+                web: "http://www.airbus.com/",
+                linkedin: "https://www.linkedin.com/company/airbus-defence-and-space/about/",
+		theme: "Others",
+		employees: "+ 10 000",
+		founded: "Founded in 2014",
+		logo:"https://media.licdn.com/dms/image/v2/C4E0BAQHiVUv4_8Usqw/company-logo_200_200/company-logo_200_200/0/1631362043684/airbus_defence_and_space_logo?e=1752710400&v=beta&t=d1pdIb4KkIdrViPec69gu3PlZlZWtbieY9ZvJottubs"
+            },
+{
+                name: "Airbus DS Operations & Services Limited",
+		localisation: "[UK]",
+                activity: "Airbus Defence and Space is a division of the Airbus Group specializing in defense, military aeronautics and space solutions. In SSA, Airbus Defence and Space develops and operates advanced capabilities to detect, track and catalog orbiting objects (satellites, space debris, etc.). It provides space traffic management (STM), collision avoidance and space risk analysis services for space agencies, armed forces and commercial operators. These activities are part of the drive to enhance the resilience and safety of Europe's space infrastructures.",
+                city: "Stevenage",
+                country: "United Kingdom",
+                lat: 51.899744132255535,
+                lon: -0.21202233132708095,
+                web: "http://www.airbus.com/",
+                linkedin: "https://www.linkedin.com/company/airbus-defence-and-space/about/",
+		theme: "Others",
+		employees: "+ 10 000",
+		founded: "Founded in 2014",
+		logo:"https://media.licdn.com/dms/image/v2/C4E0BAQHiVUv4_8Usqw/company-logo_200_200/company-logo_200_200/0/1631362043684/airbus_defence_and_space_logo?e=1752710400&v=beta&t=d1pdIb4KkIdrViPec69gu3PlZlZWtbieY9ZvJottubs"
+            },
+{
+                name: "Thales Alenia Space",
+		localisation: "[FR, HQ]",
+                activity: "Thales Alenia Space designs and delivers innovative solutions for telecommunications, navigation, Earth observation and environmental management, exploration, science and orbital infrastructure. Institutions, governments and companies rely on Thales Alenia Space to design, build and deliver satellite systems: to geolocate and connect people and objects around the world; to observe our Planet; to optimize the use of Earth's resources and those of our Solar System.",
+                city: "Toulouse",
+                country: "France",
+                lat: 43.54737508024722,
+                lon: 1.3938710452086482,
+                web: "https://www.thalesaleniaspace.com/en",
+                linkedin: "https://www.linkedin.com/company/thales-alenia-space/about/",
+		theme: "Others",
+		employees: "5 001 - 10 000",
+		founded: "Founded in 2007",
+		logo:"https://media.licdn.com/dms/image/v2/C4E0BAQFTxyIDIbNmAw/company-logo_200_200/company-logo_200_200/0/1631352218739?e=1752710400&v=beta&t=83q4ThOgV7pwJJ6WA5_5cXDZEuow1e7shP97ddx4rfM"
+            },
+{
+                name: "Thales Alenia Space",
+		localisation: "[FR]",
+                activity: "Thales Alenia Space designs and delivers innovative solutions for telecommunications, navigation, Earth observation and environmental management, exploration, science and orbital infrastructure. Institutions, governments and companies rely on Thales Alenia Space to design, build and deliver satellite systems: to geolocate and connect people and objects around the world; to observe our Planet; to optimize the use of Earth's resources and those of our Solar System.",
+                city: "Cannes",
+                country: "France",
+                lat: 43.54029708241272,
+                lon: 6.955732698251898,
+                web: "https://www.thalesaleniaspace.com/en",
+                linkedin: "https://www.linkedin.com/company/thales-alenia-space/about/",
+		theme: "Others",
+		employees: "5 001 - 10 000",
+		founded: "Founded in 2007",
+		logo:"https://media.licdn.com/dms/image/v2/C4E0BAQFTxyIDIbNmAw/company-logo_200_200/company-logo_200_200/0/1631352218739?e=1752710400&v=beta&t=83q4ThOgV7pwJJ6WA5_5cXDZEuow1e7shP97ddx4rfM"
+            },
+{
+                name: "Thales Alenia Space",
+		localisation: "[IT]",
+                activity: "Thales Alenia Space designs and delivers innovative solutions for telecommunications, navigation, Earth observation and environmental management, exploration, science and orbital infrastructure. Institutions, governments and companies rely on Thales Alenia Space to design, build and deliver satellite systems: to geolocate and connect people and objects around the world; to observe our Planet; to optimize the use of Earth's resources and those of our Solar System.",
+                city: "Roma",
+                country: "Italy",
+                lat: 41.93599745983941,
+                lon: 12.608889413185217,
+                web: "https://www.thalesaleniaspace.com/en",
+                linkedin: "https://www.linkedin.com/company/thales-alenia-space/about/",
+		theme: "Others",
+		employees: "5 001 - 10 000",
+		founded: "Founded in 2007",
+		logo:"https://media.licdn.com/dms/image/v2/C4E0BAQFTxyIDIbNmAw/company-logo_200_200/company-logo_200_200/0/1631352218739?e=1752710400&v=beta&t=83q4ThOgV7pwJJ6WA5_5cXDZEuow1e7shP97ddx4rfM"
+            },
+{
+                name: "Thales Alenia Space",
+		localisation: "[SP]",
+                activity: "Thales Alenia Space designs and delivers innovative solutions for telecommunications, navigation, Earth observation and environmental management, exploration, science and orbital infrastructure. Institutions, governments and companies rely on Thales Alenia Space to design, build and deliver satellite systems: to geolocate and connect people and objects around the world; to observe our Planet; to optimize the use of Earth's resources and those of our Solar System.",
+                city: "Madrid",
+                country: "Spain",
+                lat: 40.591693094316064,
+                lon: -3.7090580355268963,
+                web: "https://www.thalesaleniaspace.com/en",
+                linkedin: "https://www.linkedin.com/company/thales-alenia-space/about/",
+		theme: "Others",
+		employees: "5 001 - 10 000",
+		founded: "Founded in 2007",
+		logo:"https://media.licdn.com/dms/image/v2/C4E0BAQFTxyIDIbNmAw/company-logo_200_200/company-logo_200_200/0/1631352218739?e=1752710400&v=beta&t=83q4ThOgV7pwJJ6WA5_5cXDZEuow1e7shP97ddx4rfM"
+            },
+{
+                name: "Thales Alenia Space",
+		localisation: "[UK]",
+                activity: "Thales Alenia Space designs and delivers innovative solutions for telecommunications, navigation, Earth observation and environmental management, exploration, science and orbital infrastructure. Institutions, governments and companies rely on Thales Alenia Space to design, build and deliver satellite systems: to geolocate and connect people and objects around the world; to observe our Planet; to optimize the use of Earth's resources and those of our Solar System.",
+                city: "Harwell",
+                country: "United Kingdom",
+                lat: 51.579856082415944,
+                lon: -1.307857438895851,
+                web: "https://www.thalesaleniaspace.com/en",
+                linkedin: "https://www.linkedin.com/company/thales-alenia-space/about/",
+		theme: "Others",
+		employees: "5 001 - 10 000",
+		founded: "Since 2014",
+		logo:"https://media.licdn.com/dms/image/v2/C4E0BAQFTxyIDIbNmAw/company-logo_200_200/company-logo_200_200/0/1631352218739?e=1752710400&v=beta&t=83q4ThOgV7pwJJ6WA5_5cXDZEuow1e7shP97ddx4rfM"
+            },
+{
+                name: "L3Harris Technologies",
+		localisation: "[USA, HQ]",
+                activity: "The key to dominating the space domain is knowing exactly what is in orbit. L3Harris technology detects, tracks and identifies all artificial objects in Earth orbit. The company provides innovative ground- and space-based sensors and algorithmic capabilities and tools to support rapid data acquisition, extraction and exploitation. L3Harris is also modernizing DoD sensors to bring Cold War-era sensors into today’s fight.",
+                city: "Melbourne, FL",
+                country: "United States",
+                lat: 28.088567935216755,
+                lon: -80.63716037288924,
+                web: "https://www.l3harris.com/",
+                linkedin: "https://www.linkedin.com/company/l3harris-technologies/about/",
+		theme: "Others",
+		employees: "+ 10 001",
+		founded: "Founded in 2018",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQEB2mPDbj_TDA/company-logo_200_200/company-logo_200_200/0/1630457187752/l3harris_technologies_logo?e=1752710400&v=beta&t=tUW1zmYGeUj3xkHmczItig2QgQWJ091LiIjl3fw0YGk"
+            },
+{
+                name: "DiGOS",
+		localisation: "[DE, HQ]",
+                activity: "DiGOS develops turnkey Satellite & Space Debris Laser Ranging Stations as well as Optical Ground Stations for derived applications like Laser Communication and Quantum Key Distribution. We are ESA Rising Stars laureates - honored for our contribution to introducing innovative technologies to the European space sector.",
+                city: "Potsdam",
+                country: "Germany",
+                lat: 52.38196231859575,
+                lon: 13.064791770477123,
+                web: "https://digos.eu/",
+                linkedin: "https://www.linkedin.com/company/digos-potsdam-gmbh/about/",
+		theme: "Others",
+		employees: "11 - 50",
+		founded: "Founded in 2014",
+		logo:"https://media.licdn.com/dms/image/v2/D4E0BAQFmx1GVp_TMoA/company-logo_200_200/company-logo_200_200/0/1691061002375/digos_potsdam_gmbh_logo?e=1752710400&v=beta&t=igZQvimXKXceVsAfHZ-LysNgQqZ8heNGHfpBtW1XT6Y"
+            },
+{
+                name: "SES Satellites",
+		localisation: "[LUX, HQ]",
+                activity: "SES provide an intelligent network comprising a multi-orbit constellation of Geostationary (GEO) and Medium Earth Orbit (MEO) satellites and extensive ground infrastructure – to deliver video and data solutions that connect more people in more places with content that enriches their personal stories.",
+                city: "Betzdorf",
+                country: "Luxembourg",
+                lat: 49.694325188535615,
+                lon: 6.3307386383562045,
+                web: "http://www.ses.com/",
+                linkedin: "https://www.linkedin.com/company/ses/about/",
+		theme: "Commercial operators",
+		employees: "1 001 - 5 000",
+		founded: "Founded in 1985",
+		logo:"https://media.licdn.com/dms/image/v2/D4E0BAQEcXldkYlXWBQ/company-logo_200_200/B4EZWQUuJNHMAQ-/0/1741883106895/ses_logo?e=1752710400&v=beta&t=j3Qy1JpczT28MPZ0eb5xJHoXcC-az9Q9cZv6k_YB_Wc" 
+            },
+{
+                name: "SES Satellites",
+		localisation: "[FR]",
+                activity: "SES provide an intelligent network comprising a multi-orbit constellation of Geostationary (GEO) and Medium Earth Orbit (MEO) satellites and extensive ground infrastructure – to deliver video and data solutions that connect more people in more places with content that enriches their personal stories.",
+                city: "Paris",
+                country: "France",
+                lat: 48.87070597834768,
+                lon: 2.326258320111069,
+                web: "http://www.ses.com/",
+                linkedin: "https://www.linkedin.com/company/ses/about/",
+		theme: "Commercial operators",
+		employees: "1 001 - 5 000",
+		founded: "Founded in 1985",
+		logo:"https://media.licdn.com/dms/image/v2/D4E0BAQEcXldkYlXWBQ/company-logo_200_200/B4EZWQUuJNHMAQ-/0/1741883106895/ses_logo?e=1752710400&v=beta&t=j3Qy1JpczT28MPZ0eb5xJHoXcC-az9Q9cZv6k_YB_Wc" 
+            },
+{
+                name: "Leonardo",
+		localisation: "[IT, HQ]",
+                activity: "Leonardo is a global security company providing multi-domain technological capabilities in the field of AD&S. A key player in major international strategic programs, it is a technological and industrial partner to governments, defense administrations, institutions and companies.",
+                city: "Rome",
+                country: "Italy",
+                lat: 41.91853357557382,
+                lon: 12.468547261121216,
+                web: "http://www.leonardo.com/",
+                linkedin: "https://www.linkedin.com/company/leonardo_company/about/",
+		theme: "Others",
+		employees: "+ 10 001",
+		founded: "Founded in 1948",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQHcF7Y2Hf0i_A/company-logo_200_200/company-logo_200_200/0/1719255705451?e=1752710400&v=beta&t=sQdOWBmAmd5-55QeLDyZsOZ8UwmHET0iCuhF1_wqGpQ"
+            },
+{
+                name: "Lockheed Martin",
+		localisation: "[USA, HQ]",
+                activity: "Lockheed Martin is a world leader in aerospace and defense. Its Space division designs and builds civil and military satellites for observation, meteorology, GPS-III navigation and SBIRS warning systems, as well as providing the command-and-control services essential to space missions. In the field of Space Situational Awareness (SSA), Lockheed Martin offers iSpace, a data fusion and collision risk management platform, and Space Fence, a low-orbit radar used for continuous detection and cataloguing of satellites and debris. By combining these radar detection and advanced analysis tools, the company is helping to secure space traffic and preserve the sustainability of in-orbit operations.",
+                city: "Bethesda, MD",
+                country: "United States",
+                lat: 39.0309940277538,
+                lon: -77.13893443569052,
+                web: "https://www.lockheedmartin.com/",
+                linkedin: "https://www.linkedin.com/company/lockheed-martin/about/",
+		theme: "Others",
+		employees: "+ 10 001",
+		founded: "Founded in 1912",
+		logo:"https://media.licdn.com/dms/image/v2/C4E0BAQHF1YKEZdN4LA/company-logo_200_200/company-logo_200_200/0/1668532986109/lockheed_martin_logo?e=1752710400&v=beta&t=23Mk_QzkHXpzJsT3i2urXQzPfgaVm0HyfRfElKtLFfI"
+            },
+{
+                name: "Northrop Grumman",
+		localisation: "[USA, HQ]",
+                activity: "Northrop Grumman is a major player in aerospace and defense. Its Mission Systems and Space division designs and operates communication, imaging and surveillance satellites, as well as the associated command-and-control systems. For Space Situational Awareness (SSA), it deploys the GSSAP constellation in geosynchronous orbit, the DARC ground radar for high-orbit tracking, and participates in the Space Fence low-orbit radar. Thanks to these space- and ground-based networks, Northrop Grumman is significantly enhancing the detection, tracking and protection of objects in orbit.",
+                city: "Falls Church, VA",
+                country: "United States",
+                lat: 38.86765131526546,
+                lon: -77.21600581758636,
+                web: "https://www.northropgrumman.com/",
+                linkedin: "https://www.linkedin.com/company/northrop-grumman-corporation/about/",
+		theme: "Others",
+		employees: "+ 10 001",
+		founded: "Founded in 1994",
+		logo:"https://media.licdn.com/dms/image/v2/C4E0BAQFnJf3Nn259IA/company-logo_200_200/company-logo_200_200/0/1630610111159/northrop_grumman_corporation_logo?e=1752710400&v=beta&t=O22EFS_gepw0L6VUhakNfLmebcGpmoTf_iNYNRXa1R0"
+            },
+{
+                name: "Kayhan Space",
+		localisation: "[USA, HQ]",
+                activity: "Kayhan provides a fully scalable cloud-based collision avoidance service. Kayhan’s notification system easily integrates with any form of notification channel and ensures that the operators are aware of the upcoming high-interest events. Kayhan uses complex mathematical algorithms and advanced machine learning techniques to aid operators to make the safest avoidance decisions, because at Kayhan we understand that a safe space domain is the best space to operate in.",
+                city: "Broomfield, CO",
+                country: "United States",
+                lat: 39.916164915776505,
+                lon: -105.11796836065643,
+               	web: "https://kayhan.space/",
+                linkedin: "https://www.linkedin.com/company/kayhan-space/about/",
+		theme: "Others",
+		employees: "11 - 50",
+		founded: "Founded in 2019",
+		logo:"https://media.licdn.com/dms/image/v2/C560BAQFN-ODEvs2vWw/company-logo_200_200/company-logo_200_200/0/1660075205232/kayhan_space_logo?e=1753315200&v=beta&t=5VjzQSwBFZRvGW_7VA0Jlu0vRXtqyhhCEyKIVtgdw5w"
+            },
+{
+                name: "Scout Space",
+		localisation: "[USA, HQ]",
+                activity: "Scout Space was founded in 2019 with the mission to enable a new era of space safety and transparency. Scout’s in-space products and services, first launched in June 2021, allow spacecraft to see and understand things around them. Our orbital distributed sensor network significantly improves Space Domain Awareness (SDA), ensuring responsible use of the space environment. The company is a Techstars and venture-backed startup.",
+                city: "Reston, VA",
+                country: "United States",
+                lat: 38.95139215891212,
+                lon: -77.3634304606911,
+               	web: "https://scout.space/",
+                linkedin: "https://www.linkedin.com/company/scoutdotspace/about/",
+		theme: "Others",
+		employees: "11 - 50",
+		founded: "Founded in 2019",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQHwTwxlBJ3xNA/company-logo_200_200/company-logo_200_200/0/1630580618555/scoutdotspace_logo?e=1753315200&v=beta&t=FZbutM0nk-OsDh65Bjip1kFN-0HJx2HnsLa7gkrDOZs"
+            },
+{
+                name: "Turion Space",
+		localisation: "[USA, HQ]",
+                activity: "Turion Space is an American company founded in 2020, specializing in Space Domain Awareness (SDA). It designs autonomous micro-satellites, called Droids, capable of detecting, tracking and imaging objects in orbit, including space debris.",
+                city: "Irvine, CA",
+                country: "United States",
+                lat: 33.64769889204727,
+                lon: -117.7360964625961,
+               	web: "http://www.turionspace.com/",
+                linkedin: "https://www.linkedin.com/company/turion-space/about/",
+		theme: "Others",
+		employees: "51 - 200",
+		founded: "Founded in 2021",
+		logo:"https://media.licdn.com/dms/image/v2/D560BAQFVi5purxbfiw/company-logo_200_200/B56ZXtxMXbGcAI-/0/1743450851022/turion_space_logo?e=1753315200&v=beta&t=LVfd1vIWi18QQji5bj4rQTYVvKUgeM2VCjW_ha7bAsk"
+            },
+{
+                name: "Neuraspace",
+		localisation: "[PT, HQ]",
+                activity: "Smarter Space Traffic Management. Neuraspace aims to solve the space debris problem by protecting satellites operators from the losses caused by collisions, liabilities from leaving debris in orbit and allowing insurance companies to better price the risk that each satellite poses. By using a data driven approach with state of the art Machine Learning techniques, Neuraspace is able to outperform the current methods, while automating the process of collision risk avoidance. Neuraspace enables the timely detection of up to 33% more high-risk collisions that have been so far undetected, thus securing space operations.",
+                city: "Coimbra",
+                country: "Portugal",
+                lat: 40.19173235840976,
+                lon: -8.414053031810925,
+               	web: "https://www.neuraspace.com/",
+                linkedin: "https://www.linkedin.com/company/neuraspace/about/",
+		theme: "Others",
+		employees: "11 - 50",
+		founded: "Founded in 2020",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQFyggiu4aNI6A/company-logo_200_200/company-logo_200_200/0/1631282688877/neuraspace_logo?e=1753315200&v=beta&t=WzdMf-ZWlsx4_xp-OYiFrGd3R1xct9oMyQVBAYgqLMM"
+            },
+{
+                name: "Silentium Defence",
+		localisation: "[AUS, HQ]",
+                activity: "A global leader in the design and deployment of cutting-edge passive surveillance systems, Silentium Defence is redefining situational awareness. For a demonstration of our passive radar Solutions for Defence and Space. Our passive radar surveillance systems have no electromagnetic signature and enable you to detect objects discreetly. We offer a range of products and services across defence, space and critical infrastructure protection (Situational Awareness Solutions, Performance Prediction Tools, Space Data...). Silentium Defence is more than a surveillance provider; we're your strategic ally in advancing the future of situational awareness. For a demonstration of our Defence or Space passive radar Solutions, contact our team today.",
+                city: "Wingfield",
+                country: "Australia",
+                lat: -34.84423864665221,
+                lon: 138.5592835259531,
+               	web: "https://www.silentiumdefence.com.au/",
+                linkedin: "https://www.linkedin.com/company/silentium-defence/about/",
+		theme: "Others",
+		employees: "51 - 200",
+		founded: "Founded in 2017",
+		logo:"https://media.licdn.com/dms/image/v2/C560BAQEhe3LqpeNqVQ/company-logo_200_200/company-logo_200_200/0/1668565867652/silentium_defence_logo?e=1753315200&v=beta&t=CB2pH2ZVmoDUb9yIdwRHTpNROHCIf7VtLxNGz0-9cIU"
+            },
+{
+                name: "HEO",
+		localisation: "[AUS, HQ]",
+                activity: "HEO is a space technology company specialising in enabling non-Earth imaging and delivering analytics on spacecraft of interest. With our innovative software platform, HEO Inspect, we are dedicated to advancing our understanding of space objects through high resolution imaging, fast data acquisition, and extended coverage of objects. HEO's mission is to make space activities transparent and empower global space players with invaluable insights into space activities. We are a software-first company who prioritises partnerships to support space sustainability. We currently serve government, defence and commercial customers in Australia, USA, and UK.",
+                city: "Haymarket",
+                country: "Australia",
+                lat: -33.8802453468228,
+                lon: 151.20657888258606,
+               	web: "http://www.heospace.com/",
+                linkedin: "https://www.linkedin.com/company/high-earth-orbit-robotics/about/",
+		theme: "Others",
+		employees: "11 - 50",
+		founded: "Founded in 2016",
+		logo:"https://media.licdn.com/dms/image/v2/D560BAQHM2-gE9RGu7Q/company-logo_200_200/company-logo_200_200/0/1694128384802/high_earth_orbit_robotics_logo?e=1753315200&v=beta&t=V14ST3150fJTMBu8C94CQ1Z0lmkgD-OtNJSNn1jCjWk"
+            },
+{
+                name: "Spanish Space Agency",
+		localisation: "[SP, HQ]",
+                activity: "The Spanish Space Agency's mission is to use space to serve Spanish society, promoting knowledge, safety and technological development. It coordinates national policies on research, innovation and the space industry. Its objectives include the promotion of satellite applications, national security, operations in outer space, and the strengthening of the national space industry. The agency places particular emphasis on the exploitation of satellite data, the economic impact of the space sector, and international cooperation, notably with the European Space Agency and the European Union. In this way, it aims to structure a coherent and ambitious space policy for Spain.",
+                city: "Seville",
+                country: "Spain",
+                lat: 37.42046406446703,
+                lon: -5.986824413717068,
+               	web: "https://www.aee.gob.es/",
+                linkedin: "https://www.linkedin.com/company/agencia-espacial-espa%C3%B1ola/about/",
+		theme: "Space Agencies",
+		employees: "51 - 200",
+		founded: "Founded in 2023",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQGNkcN3WU7QDQ/company-logo_200_200/company-logo_200_200/0/1730619244456/agencia_espacial_espaola_logo?e=1753315200&v=beta&t=Z5dYPS22DXvf4TsRzzXAsY2xxYzO94wAE3mlAZ8xNOc"
+            },
+{
+                name: "Agenium",
+		localisation: "[FR, HQ]",
+                activity: "With the increase in space applications, the densification of launches and the development of New Space, outer space is becoming a crowded environment that needs to be monitored. Agenium offers advanced solutions in the fields of SST, SSA and SDA. Agenium has been involved in space surveillance for over 20 years, working with both defense and commercial satellite operators.",
+                city: "Toulouse",
+                country: "France",
+                lat: 43.55471773923456,
+                lon: 1.4826432439711,
+               	web: "https://agenium.com/",
+                linkedin: "https://www.linkedin.com/company/agenium/about/",
+		theme: "Others",
+		employees: "11 - 50",
+		founded: "Founded in 2003",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQH2MHM3c6mzRw/company-logo_200_200/company-logo_200_200/0/1630511886384/agenium_logo?e=1753920000&v=beta&t=WP_HXrAtGpLHVZcCBwfwvUGwrebr1QslswMHWDKveR4"
+            },
+{
+                name: "Agenium",
+		localisation: "[FR]",
+                activity: "With the increase in space applications, the densification of launches and the development of New Space, outer space is becoming a crowded environment that needs to be monitored. Agenium offers advanced solutions in the fields of SST, SSA and SDA. Agenium has been involved in space surveillance for over 20 years, working with both defense and commercial satellite operators.",
+                city: "Paris",
+                country: "France",
+                lat: 48.9060964831348,
+                lon: 2.1164650300779617,
+               	web: "https://agenium.com/",
+                linkedin: "https://www.linkedin.com/company/agenium/about/",
+		theme: "Others",
+		employees: "11 - 50",
+		founded: "Founded in 2003",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQH2MHM3c6mzRw/company-logo_200_200/company-logo_200_200/0/1630511886384/agenium_logo?e=1753920000&v=beta&t=WP_HXrAtGpLHVZcCBwfwvUGwrebr1QslswMHWDKveR4"
+            },
+{
+                name: "Astroscale",
+		localisation: "[JPN, HQ]",
+                activity: "Astroscale’s spacecraft and missions are highly flexible, with payloads capable of providing sensor data that can be used to underpin SSA capabilities. As our technologies develop, we aim to use our spacecraft’s capabilities to support a broader ecosystem of SSA data services.​",
+                city: "Tokyo",
+                country: "Japan",
+                lat: 35.6993615760922,
+                lon: 139.81842010415212,
+               	web: "https://astroscale.com/services/space-situational-awareness-ssa/",
+                linkedin: "https://www.linkedin.com/company/astroscale/about/",
+		theme: "Others",
+		employees: "501 - 1 000",
+		founded: "Founded in 2013",
+		logo:"https://media.licdn.com/dms/image/v2/C510BAQHWBIb7eNpOZw/company-logo_200_200/company-logo_200_200/0/1630630374404/astroscale_logo?e=1753920000&v=beta&t=RRoyWm2xUAjCuUwAj8vZdKvQlCHkQYgVDLpBUK3Szjw"
+            },
+{
+                name: "Astroscale",
+		localisation: "[UK]",
+                activity: "Astroscale’s spacecraft and missions are highly flexible, with payloads capable of providing sensor data that can be used to underpin SSA capabilities. As our technologies develop, we aim to use our spacecraft’s capabilities to support a broader ecosystem of SSA data services.​",
+                city: "Didcot",
+                country: "United Kingdom",
+                lat: 51.58018485819366,
+                lon: -1.309787334027638,
+               	web: "https://astroscale.com/services/space-situational-awareness-ssa/",
+                linkedin: "https://www.linkedin.com/company/astroscale/about/",
+		theme: "Others",
+		employees: "501 - 1 000",
+		founded: "Founded in 2013",
+		logo:"https://media.licdn.com/dms/image/v2/C510BAQHWBIb7eNpOZw/company-logo_200_200/company-logo_200_200/0/1630630374404/astroscale_logo?e=1753920000&v=beta&t=RRoyWm2xUAjCuUwAj8vZdKvQlCHkQYgVDLpBUK3Szjw"
+            },
+{
+                name: "Astroscale",
+		localisation: "[FR]",
+                activity: "Astroscale’s spacecraft and missions are highly flexible, with payloads capable of providing sensor data that can be used to underpin SSA capabilities. As our technologies develop, we aim to use our spacecraft’s capabilities to support a broader ecosystem of SSA data services.​",
+                city: "Toulouse",
+                country: "France",
+                lat: 43.59378769027031,
+                lon: 1.4481759561119067,
+               	web: "https://astroscale.com/services/space-situational-awareness-ssa/",
+                linkedin: "https://www.linkedin.com/company/astroscale/about/",
+		theme: "Others",
+		employees: "501 - 1 000",
+		founded: "Founded in 2013",
+		logo:"https://media.licdn.com/dms/image/v2/C510BAQHWBIb7eNpOZw/company-logo_200_200/company-logo_200_200/0/1630630374404/astroscale_logo?e=1753920000&v=beta&t=RRoyWm2xUAjCuUwAj8vZdKvQlCHkQYgVDLpBUK3Szjw"
+            },
+{
+                name: "ESA",
+		localisation: "[FR, HQ]",
+                activity: "The European Space Agency (ESA) is Europe’s gateway to space. Its mission is to shape the development of Europe’s space capability and ensure that investment in space continues to deliver benefits to the citizens of Europe and the world. ESA is an international organisation with 22 Member States. By coordinating the financial and intellectual resources of its members, it can undertake programmes and activities far beyond the scope of any single European country. ",
+                city: "Paris",
+                country: "France",
+                lat: 48.84841452007286,
+                lon: 2.304049843519114,
+               	web: "http://www.esa.int/",
+                linkedin: "https://www.linkedin.com/company/european-space-agency/about/",
+		theme: "Space Agencies",
+		employees: "+ 5 000",
+		founded: "Founded in 1975",
+		logo:"https://media.licdn.com/dms/image/v2/D4E0BAQGVBc7i78sDWA/company-logo_200_200/company-logo_200_200/0/1736179459147/european_space_agency_logo?e=1753920000&v=beta&t=CDlTMrGZpLFRXRyqj-9xx6Vc5Rm3Bk0EZg0sec_YVdY"
+            },
+{
+                name: "Arribes",
+		localisation: "[SP, HQ]",
+                activity: "We help Space Tech Companies to Develop Products and Strategy and we Help Incumbents of all industries to create a Space Strategy.",
+                city: "Madrid",
+                country: "Spain",
+                lat: 40.416482773265855,
+                lon: -3.703524081100919,
+               	web: "https://www.arrib.es/",
+                linkedin: "https://www.linkedin.com/company/arribes/about/",
+		theme: "Others",
+		employees: "2 - 10",
+		founded: "Founded in 2022",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQF5fzWuHdbCzg/company-logo_200_200/company-logo_200_200/0/1662193875841/arribes_logo?e=1753920000&v=beta&t=WZXIlhUgCHAB6p-94fipU77W4fBYYm8XrX2Rl1OYWBA"
+            },
+{
+                name: "U-Space",
+		localisation: "[FR, HQ]",
+                activity: "U-Space designs and builds next-generation nanosatellites for constellation operators. Our company is currently developing a range of 6U, 12U, and 16U smallsatellite products that address the public and private constellation market. We accompany our clients in the realization of reliable, high-performance products with a reduced design time and cost as well as a long service life. Through our designed space products and our dedication, we aim to facilitate access to space for those wishing to improve the human condition and contribute to the further exploration of the unknown.",
+                city: "Toulouse",
+                country: "France",
+                lat: 43.563514722103534,
+                lon: 1.4884258509927504,
+               	web: "http://u-space.fr/",
+                linkedin: "https://www.linkedin.com/company/u-space-nanosats/about/",
+		theme: "Commercial operators",
+		employees: "51 - 200",
+		founded: "Founded in 2018",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQF20flpUzZ98w/company-logo_200_200/company-logo_200_200/0/1630498503654/u_space_nanosats_logo?e=1753920000&v=beta&t=EJ0z7IY86VPFCU03PaNbwwcOARBABG4x8K9n6fw-2YU"
+            },
+
+        ];
+
+        // Prépare une liste de thèmes
+        const themes = [
+            "Integrated Players",
+            "Pure Data Players",
+	    "Institutionnal",
+	    "Commercial operators",
+	    "Space Agencies",
+	    "Others"
+
+        ];
+const themeColors = {
+    "Integrated Players": "black",
+    "Pure Data Players": "green",
+    "Institutionnal": "grey",
+    "Commercial operators": "violet",
+    "Space Agencies": "blue",
+    "Others": "red"
+};
+
+        // Création de la carte
+const map = L.map('map').setView([35, 2], 2.5);
+
+
+// Icônes personnalisées (même forme, couleurs différentes)
+
+const redIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors | CS Group'
+}).addTo(map);
+
+let markersLayer = L.layerGroup().addTo(map);
+
+// Affiche les marqueurs filtrés
+function updateMarkers() {
+  markersLayer.clearLayers();
+
+  const selectedThemes = Array.from(document.querySelectorAll('input[name="theme"]:checked')).map(cb => cb.value);
+  const selectedCountries = Array.from(document.querySelectorAll('input[name="country"]:checked')).map(cb => cb.value);
+
+  companies.forEach(company => {
+    const matchesTheme = selectedThemes.length === 0 || selectedThemes.some(theme => (company.theme || []).includes(theme));
+    const matchesCountry = selectedCountries.length === 0 || selectedCountries.includes(company.country);
+
+    if (company.lat && company.lon && matchesTheme && matchesCountry) {
+      let icon = redIcon; // Icône par défaut est rouge
+
+      if (company.theme && themeColors[company.theme]) {
+        let iconColor = themeColors[company.theme];
+        icon = new L.Icon({
+            iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${iconColor}.png`,
+            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+      }
+
+L.marker([company.lat, company.lon], { icon })
+  .addTo(markersLayer)
+ .bindPopup(`
+  <div style="display: flex; align-items: flex-start;">
+    ${company.logo ? `
+      <div style="margin-right:10px;text-align:center;">
+        <img src="${company.logo}" alt="${company.name}" style="width:100px;height:100px;object-fit:contain;"><br>
+        <small>${company.founded || "N/A"}</small>
+      </div>
+    ` : ''}
+    <div>
+      <strong>${company.name}</strong> <strong>${company.localisation}</strong><br>
+      <em>${company.city}, ${company.country}</em><br>
+      ${company.employees ? `<small>👥 ${company.employees} employees</small><br>` : ''}
+      <small>${company.activity || ""}</small><br>
+      ${company.web ? `<a href="${company.web}" target="_blank">🌐 Website</a> | ` : ''}
+      ${company.linkedin ? `<a href="${company.linkedin}" target="_blank">🔗 LinkedIn</a>` : ''}
+    </div>
+  </div>
+`);
+    }
+  });
+}
+// Génère les cases à cocher dynamiquement
+function createCheckboxes(containerId, items) {
+  const container = document.getElementById(containerId);
+  items.forEach(item => {
+    const label = document.createElement('label');
+    const color = themeColors[item] || 'black';
+    label.style.color = color;
+
+    label.innerHTML = `<input type="checkbox" name="${containerId.includes('theme') ? 'theme' : 'country'}" value="${item}" checked> ${item}`;
+    container.appendChild(label);
+  });
+}
+// Init thèmes et pays
+createCheckboxes('theme-checkboxes', themes);
+const countries = [...new Set(companies.map(c => c.country))].sort();
+createCheckboxes('country-checkboxes', countries);
+
+// Récupère les valeurs cochées
+function getSelectedValues(containerId) {
+  return Array.from(document.querySelectorAll(`#${containerId} input:checked`)).map(input => input.value);
+}
+
+// Met à jour les marqueurs au changement
+document.getElementById('filter-box').addEventListener('change', () => {
+  const selectedThemes = getSelectedValues('theme-checkboxes');
+  const selectedCountries = getSelectedValues('country-checkboxes');
+  updateMarkers(selectedThemes, selectedCountries);
+});
+
+// Déplie / replie un groupe
+function toggleFilter(contentId, arrowId) {
+  const content = document.getElementById(contentId);
+  const arrow = document.getElementById(arrowId);
+
+  if (content.classList.contains('open')) {
+    content.classList.remove('open');
+    arrow.textContent = '◀';
+  } else {
+    content.classList.add('open');
+    arrow.textContent = '▼';
+  }
+}
+
+// Affichage initial complet
+updateMarkers(themes, countries);
+
+  document.addEventListener("contextmenu", e => e.preventDefault());
+  document.addEventListener("keydown", e => {
+    if (e.ctrlKey && (e.key === "u" || e.key === "s" || e.key === "c")) {
+      e.preventDefault();
+    }
+  });
+
+</script>
+
+</body>
+</html>
