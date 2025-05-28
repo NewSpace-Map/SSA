@@ -7,6 +7,8 @@
   
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
     body, html {
@@ -15,9 +17,11 @@
       height: 100%;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
+
     #map {
       height: 100%;
       width: 100%;
+
     }
     #filter-box {
       position: absolute;
@@ -30,6 +34,7 @@
       width: 200px;
       z-index: 1000;
     }
+
     #filter-box h3 {
       margin-top: 0;
       margin-bottom: 10px;
@@ -37,7 +42,32 @@
       border-bottom: 1px solid #eee;
       padding-bottom: 5px;
     }
-    .filter-group {
+ 
+#search-box {
+  position: fixed;
+  top: 100px;
+  left: 1600px;
+  background: white;
+  border-radius: 80px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  padding: 10px;
+  z-index: 1001;
+  width: 250px;
+}
+
+#search-container {
+  display: flex;
+  align-items: center;
+}
+
+#search-container input {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 80px;
+  margin-left: 8px;
+}
+     .filter-group {
       margin-bottom: 15px;
     }
     .filter-header {
@@ -91,7 +121,7 @@
 
   <div class="filter-group"> 
   <div class="filter-header" onclick="toggleFilter('theme-content', 'theme-arrow')">
-    <strong>Topics</strong>
+    <strong>Topics 🛰️</strong>
     <span id="theme-arrow" class="filter-arrow open">◀</span>
   </div>
   <div id="theme-content" class="filter-content open">
@@ -103,7 +133,7 @@
 
   <div class="filter-group">
     <div class="filter-header" onclick="toggleFilter('country-content', 'country-arrow')">
-      <strong>Countries</strong>
+      <strong>Countries 🌍</strong>
       <span id="country-arrow" class="filter-arrow">◀</span>
     </div>
     <div id="country-content" class="filter-content">
@@ -113,7 +143,14 @@
     </div>
   </div>
 
- </div>
+<!-- Boîte de recherche -->
+<div id="search-box">
+  <div id="search-container">
+    <i class="fas fa-search"></i>
+    <input type="text" id="companySearch" placeholder="Rechercher une entreprise..." onkeyup="searchCompany()">
+  </div>
+  <div id="search-results"></div>
+</div>
 
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1969,6 +2006,21 @@
 		founded: "Founded in 2018",
 		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQHMnF1CcRMd-A/company-logo_200_200/company-logo_200_200/0/1686692823417/saudi_space_logo?e=1753920000&v=beta&t=kqftu2WcEE5uihW3JQtlh55eIHWCl4RmFuZYY7Ehf58"
             },
+{
+                name: "RHEA Group",
+		localisation: "[BEL, HQ]",
+                activity: "Founded in 1992 in Belgium, the RHEA Group has supported more than 120 space missions, from CubeSats to multi-satellite constellations. Since 2009, it has contributed its expertise to ESA's Space Situational Awareness program, created that year to monitor and analyze space threats. Within the SSA's Space Weather segment, its consultants design and integrate surveillance architectures and process near-real-time ground data streams to provide alerts and forecasts to space authorities. Through these interventions, RHEA contributes to strengthening Europe's capacity to detect, predict, and mitigate risks related to debris, asteroids, and solar events.",
+                city: "Wavre",
+                country: "Belgium",
+                lat: 50.73077304354979,
+                lon: 4.587905423868984,
+               	web: "https://www.rheagroup.com/",
+                linkedin: "https://www.linkedin.com/company/rheagroup/about/",
+		theme: "Others",
+		employees: "501 - 1 000",
+		founded: "Founded in 1992",
+		logo:"https://media.licdn.com/dms/image/v2/C4E0BAQGy2aAJFKIWLQ/company-logo_200_200/company-logo_200_200/0/1675957601078/rheagroup_logo?e=1753920000&v=beta&t=vG6pzuAMoRTqIROZJqEY80R1dQfoI7fFtzag_MPuY_8"
+            },
 
         ];
 
@@ -2116,6 +2168,56 @@ updateMarkers(themes, countries);
       e.preventDefault();
     }
   });
+
+function searchCompany() {
+  const query = document.getElementById('companySearch').value.toLowerCase();
+  const selectedThemes = getSelectedValues('theme-checkboxes');
+  const selectedCountries = getSelectedValues('country-checkboxes');
+
+  markersLayer.clearLayers();
+
+  companies.forEach(company => {
+    const matchesName = company.name.toLowerCase().includes(query);
+    const matchesTheme = selectedThemes.length === 0 || selectedThemes.includes(company.theme);
+    const matchesCountry = selectedCountries.length === 0 || selectedCountries.includes(company.country);
+
+    if (matchesName && matchesTheme && matchesCountry && company.lat && company.lon) {
+      let icon = redIcon;
+      if (company.theme && themeColors[company.theme]) {
+        let iconColor = themeColors[company.theme];
+        icon = new L.Icon({
+          iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${iconColor}.png`,
+          shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+        });
+      }
+
+      L.marker([company.lat, company.lon], { icon })
+        .addTo(markersLayer)
+        .bindPopup(`
+          <div style="display: flex; align-items: flex-start;">
+            ${company.logo ? `
+              <div style="margin-right:10px;text-align:center;">
+                <img src="${company.logo}" alt="${company.name}" style="width:100px;height:100px;object-fit:contain;"><br>
+                <small>${company.founded || "N/A"}</small>
+              </div>
+            ` : ''}
+            <div>
+              <strong>${company.name}</strong> <strong>${company.localisation}</strong><br>
+              <em>${company.city}, ${company.country}</em><br>
+              ${company.employees ? `<small>👥 ${company.employees} employees</small><br>` : ''}
+              <small>${company.activity || ""}</small><br>
+              ${company.web ? `<a href="${company.web}" target="_blank">🌐 Website</a> | ` : ''}
+              ${company.linkedin ? `<a href="${company.linkedin}" target="_blank">🔗 LinkedIn</a>` : ''}
+            </div>
+          </div>
+        `);
+    }
+  });
+}
 
 </script>
 
