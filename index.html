@@ -45,16 +45,16 @@
  
 #search-box {
   position: fixed;
-  top: 100px;
-  left: 1600px;
+  top: 20px;
+  right: 20px;
   background: white;
   border-radius: 80px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   padding: 10px;
   z-index: 1001;
-  width: 250px;
+  width: 90%;
+  max-width: 300px;
 }
-
 #search-container {
   display: flex;
   align-items: center;
@@ -108,6 +108,27 @@
       background: #ccc;
       border-radius: 4px;
     }
+
+@media (max-width: 768px) {
+  #filter-box {
+    position: fixed;
+    top: 80px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-width: 95%;
+    z-index: 1000;
+  }
+
+  #search-box {
+    top: 20px;
+    right: 10px;
+    left: 10px;
+    width: auto;
+    max-width: 95%;
+  }
+}
+
   </style>
 </head>
 
@@ -1994,7 +2015,231 @@
 		founded: "Founded in 2021",
 		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQEm6hrpb_4vNA/company-logo_200_200/company-logo_200_200/0/1732030486616/uk_space_command_logo?e=1753920000&v=beta&t=SBGw-G_mlNiBDKZ6-j78w6T_9j002vZZi0mxndiTK68"
             },
-
+{
+                name: "BELSPO - Belgian Science Policy Office",
+		localisation: "[BEL, HQ]",
+                activity: "BELSPO (Belgian Science Policy Office) is the federal agency responsible for science policy in Belgium. It supports research and innovation in many fields, including space. In terms of Space Situational Awareness (SSA), BELSPO participates in European space surveillance programs (such as EU SST), funds Belgian projects related to space debris and space weather, and collaborates with institutions such as the Royal Observatory of Belgium.",
+                city: "Bruxelles",
+                country: "Belgium",
+                lat: 50.86072132825342,
+                lon: 4.3561166779990135,
+               	web: "https://www.belspo.be/belspo/space/eu_ssa_sst_fr.stm",
+                linkedin: "https://www.linkedin.com/company/belspo/about/",
+		theme: "Institutionnal",
+		employees: "1 001 - 5 000",
+		founded: "Founded in 1959",
+		logo:"https://media.licdn.com/dms/image/v2/D4E0BAQHxjTnR-muxow/company-logo_200_200/B4EZbnUzw1HAAI-/0/1747637714376/belspo_logo?e=1754524800&v=beta&t=eA3WrQRCN8yJ7mNHMxKMm3f2m28iBn2L-aGyay82grw"
+            },
+{
+                name: "ESA",
+		localisation: "[BEL]",
+                activity: "The ESA Center in Redu, located in Wallonia (Belgium), is one of the European Space Agency's (ESA) operational sites. It is part of the ESOC (European Space Operations Center) network and specializes in satellite control, secure communications, and payload testing. Redu plays a key role in European telecommunications, space security, and Space Situational Awareness (SSA) programs.",
+                city: "Redu",
+                country: "Belgium",
+                lat: 50.00206070720595,
+                lon: 5.1488615397517,
+               	web: "https://www.esa.int/Enabling_Support/Operations/ESA_Ground_Stations/ESA_ESEC",
+                linkedin: "https://www.linkedin.com/company/european-space-agency/about/",
+		theme: "Institutionnal",
+		employees: "+ 50",
+		founded: "Founded in 1968",
+		logo:"https://media.licdn.com/dms/image/v2/D4E0BAQGVBc7i78sDWA/company-logo_200_200/company-logo_200_200/0/1736179459147/european_space_agency_logo?e=1754524800&v=beta&t=hTOnzQ117PcdAfQHBnM_vKJp1khmcwxYAniTXnAPuoU"
+            },
+{
+                name: "Aerospacelab",
+		localisation: "[BEL, HQ]",
+                activity: "Manufacturing satellites for Earth Observation, Telecommunications and Technology Demonstrations, from 50 kg to 5000 kg.",
+                city: "Charleroi",
+                country: "Belgium",
+                lat: 50.40307257588635,
+                lon: 4.427633222797309,
+               	web: "http://www.aerospacelab.com/",
+                linkedin: "https://www.linkedin.com/company/aerospacelab/about/",
+		theme: "Others",
+		employees: "201 - 500",
+		founded: "Founded in 2018",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQGX3_FaPGL5ug/company-logo_200_200/company-logo_200_200/0/1710531998014/aerospacelab_logo?e=1754524800&v=beta&t=4BgTUKnEGWD2YrumWDLTV8jIE3F8HzJvcP5ECt1UBV0"
+            },
+{
+                name: "Altec SPA",
+		localisation: "[IT, HQ]",
+                activity: "ALTEC – Aerospace Logistics Technology Engineering Company is the Italian center of excellence for the provision of engineering and logistics services to support operations and utilization of the International Space Station and the development and implementation of planetary exploration missions. Operational support center for space surveillance, and development of SST software solutions. ALTEC is a public-private company owned by Thales Alenia Spaceb and the Italian Space Agency – ASI.",
+                city: "Turin",
+                country: "Italy",
+                lat: 45.080833069687564,
+                lon: 7.61294322804859,
+               	web: "http://www.altecspace.it/",
+                linkedin: "https://www.linkedin.com/company/altec-spa/about/",
+		theme: "Others",
+		employees: "51 - 200",
+		founded: "Founded in 2001",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQFG8wxrn7_1GA/company-logo_200_200/company-logo_200_200/0/1630540548969/altec_spa_logo?e=1754524800&v=beta&t=koZ7byIlJYmDyMS0JrfLrkECt0HFCj-TzVXgop4hq4Y"
+            },
+{
+                name: "ARGOTEC",
+		localisation: "[IT, HQ]",
+                activity: "Argotec is an Italian aerospace company based in San Mauro Torinese (Turin, Italy). The company is specialized in the design, manufacture, and operation of highly reliable micro-satellites (up to 200 kg) from Earth Orbit to deep space, as well as the development of advanced solutions to support the comfort and well-being of astronauts and future space explorers. Argotec development of compact satellites and orbital observation platforms capable of supporting SSA.",
+                city: "San Mauro Torinese",
+                country: "Italy",
+                lat: 45.11152066563393,
+                lon: 7.742203319896793,
+               	web: "https://www.argotecgroup.com/",
+                linkedin: "https://www.linkedin.com/company/argotecsrl/about/",
+		theme: "Others",
+		employees: "201 - 500",
+		founded: "Founded in 2008",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQGAKppI3Ov9Vw/company-logo_200_200/company-logo_200_200/0/1729265069358/argotecsrl_logo?e=1754524800&v=beta&t=B-6T4JZIsz1J0TUJLSR6quXMukZHcc3YnDeZH8Nq5yU"
+            },
+{
+                name: "AIKO",
+		localisation: "[IT, HQ]",
+                activity: "AIKO's innovative and futuristic research-focused mission is clear: to develop algorithms incorporating artificial intelligence in order to increase the autonomy of current space missions. AIKO use Artificial intelligence for automated orbital data analysis, intelligent collision management.",
+                city: "Turin",
+                country: "Italy",
+                lat: 45.062662057509506,
+                lon: 7.687000290294781,
+               	web: "https://www.aikospace.com/",
+                linkedin: "https://www.linkedin.com/company/aikospace/about/",
+		theme: "Others",
+		employees: "51 - 200",
+		founded: "Founded in 2017",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQEudeuocxT-HQ/company-logo_200_200/company-logo_200_200/0/1653318476999/aikospace_logo?e=1754524800&v=beta&t=wDP-PrywfV2F5JwUUWpr5OKhSfjqS1qtRpsg4BAaQSM"
+            },
+{
+                name: "AIKO",
+		localisation: "[FR]",
+                activity: "AIKO's innovative and futuristic research-focused mission is clear: to develop algorithms incorporating artificial intelligence in order to increase the autonomy of current space missions. AIKO use Artificial intelligence for automated orbital data analysis, intelligent collision management.",
+                city: "Toulouse",
+                country: "France",
+                lat: 43.57707323645446,
+                lon: 1.477211770945658,
+               	web: "https://www.aikospace.com/",
+                linkedin: "https://www.linkedin.com/company/aikospace/about/",
+		theme: "Others",
+		employees: "51 - 200",
+		founded: "Founded in 2017",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQEudeuocxT-HQ/company-logo_200_200/company-logo_200_200/0/1653318476999/aikospace_logo?e=1754524800&v=beta&t=wDP-PrywfV2F5JwUUWpr5OKhSfjqS1qtRpsg4BAaQSM"
+            },
+{
+                name: "Tyvak International",
+		localisation: "[IT, HQ]",
+                activity: "Tyvak International, a company by Terran Orbital, is a leading manufacturer of small satellites primarily serving European and Italian aerospace and defense industries. Tyvak International develop of nanosatellites with SSA/STM surveillance capabilities, constellation projects.",
+                city: "Turin",
+                country: "Italy",
+                lat: 45.09200185516888,
+                lon: 7.670305968378198,
+               	web: "http://tyvak.eu/",
+                linkedin: "https://www.linkedin.com/company/tyvakintl/about/",
+		theme: "Others",
+		employees: "51 - 200",
+		founded: "Founded in 2015",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQEaS8t8MNlHog/company-logo_200_200/company-logo_200_200/0/1733839917984/tyvakintl_logo?e=1754524800&v=beta&t=aH3NUY8SXCuF8Hr7sHtCSXMudxzyR96KgmIFjg-0wYA"
+            },
+{
+                name: "Officina Stellare S.p.A",
+		localisation: "[IT, HQ]",
+                activity: "Officina Stellare SpA, headquartered in Sarcedo (Vicenza), specializes in the design and manufacture of high-tech opto-mechanical instruments for the aerospace, scientific research, and defense sectors. Its high-precision optical telescopes are used for the detection and tracking of space objects.",
+                city: "Sarcedo",
+                country: "Italy",
+                lat: 45.70377784179728,
+                lon: 11.50706022422564,
+               	web: "http://www.officinastellare.com/",
+                linkedin: "https://www.linkedin.com/company/officina-stellare-srl/about/",
+		theme: "Others",
+		employees: "51 - 200",
+		founded: "Founded in 2009",
+		logo:"https://media.licdn.com/dms/image/v2/C560BAQE_pPirQIJ8wQ/company-logo_200_200/company-logo_200_200/0/1631365314688?e=1754524800&v=beta&t=HLxhP4ij1q9ZjUEOv1XDho_PH-WtIuxANCSPZDPvpVE"
+            },
+{
+                name: "KP Labs",
+		localisation: "[PL, HQ]",
+                activity: "KP Labs is a NewSpace company based in Poland. In 2016, a group of engineers and scientists associated with the Silesian University of Technology in Gliwice. We deliver AI computers and software to bring autonomy to demanding space missions. Our vision is to become a European Leader in delivering Autonomous Systems for space applications.",
+                city: "Gliwice",
+                country: "Poland",
+                lat: 50.278064677999126,
+                lon: 18.68574847420979,
+               	web: "https://www.kplabs.pl/",
+                linkedin: "https://www.linkedin.com/company/kp-labs-sp-z-o-o/about/",
+		theme: "Others",
+		employees: "51 - 200",
+		founded: "Founded in 2016",
+		logo:"https://media.licdn.com/dms/image/v2/C4D0BAQFlNbJo4OksSA/company-logo_200_200/company-logo_200_200/0/1630553583973/kp_labs_sp_z_o_o_logo?e=1754524800&v=beta&t=hZYWu2iG_Wzyl5s63n341VMWmQ-XLrjIxYwaR92FUP0"
+            },
+{
+                name: "PIAP Space",
+		localisation: "[PL, HQ]",
+                activity: "PIAP Space is a Polish company who focuses on two specialisations: SPACE ROBOTICS (development of technologies and products in the space robotics domain for In-Orbit Servicing and future ISAM missions) and MECHANICAL GROUND SUPPORT EQUIPMENT (MGSE) (offers various types of devices for the assembly, integration, and testing of satellites and their subsystems).",
+                city: "Warszawa",
+                country: "Poland",
+                lat: 52.193094462809995,
+                lon: 20.922373062855463,
+               	web: "http://www.piap.space/",
+                linkedin: "https://www.linkedin.com/company/piapspace/about/",
+		theme: "Others",
+		employees: "11 - 50",
+		founded: "Founded in 2018",
+		logo:"https://media.licdn.com/dms/image/v2/D560BAQEcT1BMwKf9Ag/company-logo_200_200/company-logo_200_200/0/1738832064372/piapspace_logo?e=1754524800&v=beta&t=Qw5LnkY-19tbvdfF84LqvNY0S7OrnaW3L1CucpGMMbM"
+            },
+{
+                name: "TEKEVER",
+		localisation: "[PT, HQ]",
+                activity: "TEKEVER offers orbital surveillance software, collision detection and avoidance algorithms. Tekever participate to ESA SSA projects.",
+                city: "Lisbon",
+                country: "Portugal",
+                lat: 38.714251155349075,
+                lon: -9.140739374382287,
+               	web: "https://www.tekever.com/space/",
+                linkedin: "https://www.linkedin.com/company/tekever/about/",
+		theme: "Others",
+		employees: "501 - 1 000",
+		founded: "Founded in 2001",
+		logo:"https://media.licdn.com/dms/image/v2/C4E0BAQEIUSfoRcj16g/company-logo_200_200/company-logo_200_200/0/1630612534015/tekever_logo?e=1754524800&v=beta&t=QOHPLgMh2Tfk4qgfklhBGlSsGaVdzphdIKiZdhkjxS4"
+            },
+{
+                name: "Portuguese Space Agency",
+		localisation: "[PT, HQ]",
+                activity: "The Portuguese Space Agency coordinates ESA projects related to SSA at the national level. It has links with EU SST and has orbital surveillance software and collision detection and avoidance algorithms.",
+                city: "Lisbon",
+                country: "Portugal",
+                lat: 38.744736813283005,
+                lon: -9.16887616216478,
+               	web: "https://ptspace.pt/pt/home/",
+                linkedin: "https://www.linkedin.com/company/agencia-espacial-portuguesa/about/",
+		theme: "Space Agencies",
+		employees: "11 - 50",
+		founded: "Founded in 2019",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQFxV5iLOoj0dw/company-logo_200_200/company-logo_200_200/0/1719225825408/portugal_space_logo?e=1754524800&v=beta&t=w-gjH6BNqYiyIWWfpdf7BKDEPfoqYVPD5uO8QmfUqI4"
+            },
+{
+                name: "SSC - Swedish Space Corporation",
+		localisation: "[SWE, HQ]",
+                activity: "SSC is a global provider of advanced space services such as: object tracking, ground station operations, SSA radar, and in-orbit mission management. We develop experimental payloads and provide rocket and balloon launch services from our unique space center, Esrange Space Center. We also offer reliable access to satellites through our global network of ground stations. In addition, we provide technical consulting expertise for all phases of our customers' space programs.",
+                city: "Solna",
+                country: "Sweden",
+                lat: 59.356190664910805,
+                lon: 17.97320837578054,
+               	web: "http://www.sscspace.com/",
+                linkedin: "https://www.linkedin.com/company/ssc-swedish-space-corporation/about/",
+		theme: "Others",
+		employees: "501 - 1 000",
+		founded: "Founded in 1972",
+		logo:"https://media.licdn.com/dms/image/v2/C560BAQG4HdhepsPH6A/company-logo_200_200/company-logo_200_200/0/1639661192306/ssc_swedish_space_corporation_logo?e=1754524800&v=beta&t=kRvzggEtPWZvKdYM_zWMjedWnjKokhPTQzL2uJ1Expw"
+            },
+{
+                name: "Unibap Space Solutions AB",
+		localisation: "[SWE, HQ]",
+                activity: "At Unibap Space Solutions, we innovate and manufacture cutting-edge hardware, software, and IT services for smart space missions. Our solutions improve real-time monitoring and high-speed communications, making every space operation more agile, cost-effective, and sustainable. Drawing on pioneering research in the fields of space systems, image analysis, industrial automation, and AI, we now specialize in intelligent onboard processing for SSA satellites and AI for debris analysis.",
+                city: "Uppsala",
+                country: "Sweden",
+                lat: 59.85691829483619,
+                lon: 17.638629099510613,
+               	web: "https://unibap.com/",
+                linkedin: "https://www.linkedin.com/company/unibap/about/",
+		theme: "Others",
+		employees: "11 - 50",
+		founded: "Founded in 2013",
+		logo:"https://media.licdn.com/dms/image/v2/D4D0BAQGtWgSlzXn4Zw/company-logo_200_200/B4DZcWIFT6GgAQ-/0/1748422907548/unibap_logo?e=1754524800&v=beta&t=iVe-uU-f0M_yJeIY2V4zcoG1L_IsuGXy40vkKTCmlWA"
+            },
         ];
 
         // Prépare une liste de thèmes
