@@ -108,6 +108,42 @@
       background: #ccc;
       border-radius: 4px;
     }
+#search-results {
+  margin-top: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  padding: 10px;
+  display: none;
+  position: absolute;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  z-index: 1002;
+}
+
+.search-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+  cursor: pointer;
+}
+
+.search-item img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  margin-right: 10px;
+}
+
+.search-item a {
+  margin-right: 10px;
+  font-size: 14px;
+}
 
 @media (max-width: 768px) {
   #filter-box {
@@ -2389,52 +2425,66 @@ updateMarkers(themes, countries);
 
 function searchCompany() {
   const query = document.getElementById('companySearch').value.toLowerCase();
-  const selectedThemes = getSelectedValues('theme-checkboxes');
-  const selectedCountries = getSelectedValues('country-checkboxes');
+  const resultsContainer = document.getElementById('search-results');
+  resultsContainer.innerHTML = '';
+  if (!query) {
+    resultsContainer.style.display = 'none';
+    return;
+  }
 
-  markersLayer.clearLayers();
+  const filtered = companies.filter(company =>
+    company.name.toLowerCase().includes(query)
+  );
 
-  companies.forEach(company => {
-    const matchesName = company.name.toLowerCase().includes(query);
-    const matchesTheme = selectedThemes.length === 0 || selectedThemes.includes(company.theme);
-    const matchesCountry = selectedCountries.length === 0 || selectedCountries.includes(company.country);
+  if (filtered.length === 0) {
+    resultsContainer.innerHTML = '<p>Aucune entreprise trouvée.</p>';
+  } else {
+    filtered.forEach(company => {
+      const item = document.createElement('div');
+      item.className = 'search-item';
+      item.innerHTML = `
+        <img src="${company.logo}" alt="${company.name}">
+        <div>
+          <strong>${company.name}</strong> - <small>${company.city}, ${company.country}</small><br>
+        </div>
+      `;
+      item.addEventListener('click', () => {
+        map.setView([company.lat, company.lon], 10);
+        
+L.popup({
+  offset: [0, -20],
+  autoPan: true,
+  closeButton: true,
+  className: 'custom-popup'
+})
 
-    if (matchesName && matchesTheme && matchesCountry && company.lat && company.lon) {
-      let icon = redIcon;
-      if (company.theme && themeColors[company.theme]) {
-        let iconColor = themeColors[company.theme];
-        icon = new L.Icon({
-          iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${iconColor}.png`,
-          shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-          iconSize: [25, 41],
-          iconAnchor: [12, 41],
-          popupAnchor: [1, -34],
-          shadowSize: [41, 41]
-        });
-      }
+          .setLatLng([company.lat, company.lon])
+          .setContent(`
+            <div style="display: flex; align-items: flex-start;">
+              ${company.logo ? `
+      <div style="margin-right:10px;text-align:center;">
+        <img src="${company.logo}" alt="${company.name}" style="width:100px;height:100px;object-fit:contain;"><br>
+        <small>${company.founded || "N/A"}</small>
+      </div>
+    ` : ''}
+    <div>
+      <strong>${company.name}</strong> <strong>${company.localisation}</strong><br>
+      <em>${company.city}, ${company.country}</em><br>
+      ${company.employees ? `<small>👥 ${company.employees} employees</small><br>` : ''}
+      <small>${company.activity || ""}</small><br>
+      ${company.web ? `<a href="${company.web}" target="_blank">🌐 Website</a> | ` : ''}
+      ${company.linkedin ? `<a href="${company.linkedin}" target="_blank">🔗 LinkedIn</a>` : ''}
 
-      L.marker([company.lat, company.lon], { icon })
-        .addTo(markersLayer)
-        .bindPopup(`
-          <div style="display: flex; align-items: flex-start;">
-            ${company.logo ? `
-              <div style="margin-right:10px;text-align:center;">
-                <img src="${company.logo}" alt="${company.name}" style="width:100px;height:100px;object-fit:contain;"><br>
-                <small>${company.founded || "N/A"}</small>
               </div>
-            ` : ''}
-            <div>
-              <strong>${company.name}</strong> <strong>${company.localisation}</strong><br>
-              <em>${company.city}, ${company.country}</em><br>
-              ${company.employees ? `<small>👥 ${company.employees} employees</small><br>` : ''}
-              <small>${company.activity || ""}</small><br>
-              ${company.web ? `<a href="${company.web}" target="_blank">🌐 Website</a> | ` : ''}
-              ${company.linkedin ? `<a href="${company.linkedin}" target="_blank">🔗 LinkedIn</a>` : ''}
             </div>
-          </div>
-        `);
-    }
-  });
+          `)
+          .openOn(map);
+      });
+      resultsContainer.appendChild(item);
+    });
+  }
+
+  resultsContainer.style.display = 'block';
 }
 
 </script>
